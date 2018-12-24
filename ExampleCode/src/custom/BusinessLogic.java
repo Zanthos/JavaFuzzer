@@ -18,6 +18,7 @@ public class BusinessLogic {
 		
 	}
 	
+	@SuppressWarnings("unused")
 	private void exampleFunction3(String sTest, boolean bTest) {
 		
 	}
