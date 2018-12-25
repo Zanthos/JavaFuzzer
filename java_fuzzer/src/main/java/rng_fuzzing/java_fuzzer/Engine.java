@@ -28,6 +28,7 @@ public class Engine
         Set<Method> methods = reflections.getMethodsAnnotatedWith(Fuzz.class);
         Map<Class, Set<Method>> map = new HashMap<Class, Set<Method>>();
         
+        //TODO: now that the runner fuzzes by method, don't need to sort by Class
         for (Method method : methods) {
         		method.setAccessible(true);
         		Class cls = method.getDeclaringClass();
@@ -42,8 +43,11 @@ public class Engine
         }
         
         for (Map.Entry<Class, Set<Method>> entry : map.entrySet()) {
-        		Runner runner = new Runner(entry);
-		    runner.fuzz();
+        		Class key = entry.getKey();
+        		for (Method method : entry.getValue()) {
+	        		Runner runner = new Runner(key, method);
+			    runner.start();
+        		}
         	}
     }
 }

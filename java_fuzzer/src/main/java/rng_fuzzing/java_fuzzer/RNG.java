@@ -1,6 +1,6 @@
 package rng_fuzzing.java_fuzzer;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.Random;
 
 public class RNG {
@@ -101,12 +101,7 @@ public class RNG {
 	
 	public String getString(int length) {
 		byte[] bytes = new byte[30];
-		try {
-			return new String(bytes, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
+		rand.nextBytes(bytes);
+		return new String(bytes, Charset.forName("UTF-8"));
 	}
 }

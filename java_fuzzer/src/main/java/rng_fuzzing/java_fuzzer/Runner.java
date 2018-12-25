@@ -6,25 +6,23 @@ package rng_fuzzing.java_fuzzer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Johnny Rockett
  *
  */
-public class Runner {
+public class Runner extends Thread {
 	
 	private Object instance;
-	private Set<Method> methods;
+	private Method method;
 	private RNG rng;
 	
 	@SuppressWarnings("rawtypes")
-	public Runner(Map.Entry<Class, Set<Method>> fuzzMethods) {
+	public Runner(Class cls, Method method) {
 		super();
 		rng = new RNG();
-		instance = createInstance(fuzzMethods.getKey());
-		methods = fuzzMethods.getValue();
+		instance = createInstance(cls);
+		this.method = method;
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -53,23 +51,21 @@ public class Runner {
 		return inst;
 	}
 	
-	public void fuzz() {
+	public void run() {
     	
-    		for (Method method : methods) {
-	    		System.out.println(method.getName() + "\t---------");
-	    		try {
-				method.invoke(instance, randomArgs(method.getParameterTypes()));
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    		}
+    		System.out.println(method.getName() + "\t---------");
+    		try {
+			method.invoke(instance, randomArgs(method.getParameterTypes()));
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
     
     @SuppressWarnings("rawtypes")
