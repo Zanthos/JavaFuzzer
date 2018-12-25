@@ -1,7 +1,5 @@
 package rng_fuzzing.java_fuzzer;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,87 +42,8 @@ public class Engine
         }
         
         for (Map.Entry<Class, Set<Method>> entry : map.entrySet()) {
-		    fuzz(entry);
+        		Runner runner = new Runner(entry);
+		    runner.fuzz();
         	}
-    }
-    
-    @SuppressWarnings("rawtypes")
-	private static void fuzz(Map.Entry<Class, Set<Method>> fuzzMethods) {
-    		Object obj = null;
-    		Constructor[] constructors = fuzzMethods.getKey().getConstructors();
-    		if (constructors != null) {
-    			Constructor cntr = constructors[0];
-    		
-			try {
-				obj = cntr.newInstance(randomArgs(cntr.getParameterTypes()));
-			} catch (InstantiationException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (IllegalAccessException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (IllegalArgumentException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (InvocationTargetException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-    		}
-    	
-    		for (Method method : fuzzMethods.getValue()) {
-	    		System.out.println(method.getName() + "\t---------");
-	    		try {
-					method.invoke(obj, randomArgs(method.getParameterTypes()));
-				} catch (IllegalAccessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IllegalArgumentException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (InvocationTargetException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-    		}
-    }
-    
-    @SuppressWarnings("rawtypes")
-	private static Object[] randomArgs(Class[] types) {
-    		Object[] instances = new Object[types.length];
-    		for (int i=0; i < types.length; i++) {
-    			System.out.println("\t" + types[i].getTypeName());
-    			instances[i] = getInstance(types[i]);
-    		}
-    		return instances;
-    }
-    
-    @SuppressWarnings("rawtypes")
-	private static Object getInstance(Class cls) {
-	    	if (cls.equals(int.class)) {
-	    		return 1;
-	    	}
-	    	else if (cls.equals(long.class)) {
-	    		return 1L;
-	    	}
-	    	else if (cls.equals(char.class)) {
-	    		return 'a';
-	    	}
-	    	else if (cls.equals(float.class)) {
-	    		return (float)1.0;
-	    	}
-	    	else if (cls.equals(double.class)) {
-	    		return (double)1.0;
-	    	}
-	    	else if (cls.equals(boolean.class)) {
-	    		return true;
-	    	}
-	    	else if (cls.equals(byte.class)) {
-	    		return (byte)1;
-	    	}
-	    	else if (cls.equals(short.class)) {
-	    		return (short)1;
-	    	}
-	    	else return null;
     }
 }
