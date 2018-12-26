@@ -1,5 +1,6 @@
 package rng_fuzzing.java_fuzzer;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Random;
 
@@ -65,11 +66,15 @@ public class RNG {
 	}
 	
 	public double getDouble() {
-		return rand.nextDouble();
+		byte[] bytes = new byte[8];
+		rand.nextBytes(bytes);
+		return ByteBuffer.wrap(bytes).getDouble();
 	}
 	
 	public float getFloat() {
-		return rand.nextFloat();
+		byte[] bytes = new byte[4];
+		rand.nextBytes(bytes);
+		return ByteBuffer.wrap(bytes).getFloat();
 	}
 	
 	public long getLong() {
@@ -100,7 +105,7 @@ public class RNG {
 	}
 	
 	public String getString(int length) {
-		byte[] bytes = new byte[30];
+		byte[] bytes = new byte[length];
 		rand.nextBytes(bytes);
 		return new String(bytes, Charset.forName("UTF-8"));
 	}

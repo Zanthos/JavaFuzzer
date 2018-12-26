@@ -3,6 +3,7 @@
  */
 package rng_fuzzing.java_fuzzer;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -29,11 +30,11 @@ public class Runner extends Thread {
 	private Object createInstance(Class cls) {
 		Object inst = null;
 		Constructor[] constructors = cls.getConstructors();
-		if (constructors != null) {
+		if (constructors.length != 0) {
 			Constructor cntr = constructors[0];
-		
 			try {
-				inst = cntr.newInstance(randomArgs(cntr.getParameterTypes()));
+				Object[] args = randomArgs(cntr.getParameterTypes());
+				inst = cntr.newInstance(args);
 			} catch (InstantiationException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -52,27 +53,28 @@ public class Runner extends Thread {
 	}
 	
 	public void run() {
-    	
-    		System.out.println(method.getName() + "\t---------");
-    		try {
-			method.invoke(instance, randomArgs(method.getParameterTypes()));
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		int count = 10;
+    		while(count > 0) {
+	    		try {
+				method.invoke(instance, randomArgs(method.getParameterTypes()));
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    		count--;
+    		}
     }
     
     @SuppressWarnings("rawtypes")
 	private Object[] randomArgs(Class[] types) {
     		Object[] instances = new Object[types.length];
     		for (int i=0; i < types.length; i++) {
-    			System.out.println("\t" + types[i].getTypeName());
     			instances[i] = getInstance(types[i]);
     		}
     		return instances;
@@ -106,6 +108,21 @@ public class Runner extends Thread {
 	    	}
 	    	else if (cls.equals(String.class)) {
 	    		return rng.getString();
+	    	}
+	    	else if (cls.isArray()) {
+	    		Class type = cls.getComponentType();
+	    		int length = rng.fromRange(0, 10);
+	    		Object array = Array.newInstance(type, length);
+	    		for (int i=0; i < length; i++) {
+	    			Array.set(array, i, getInstance(type));
+	    		}
+	    		System.out.println(array.toString());
+	    		return Array.newInstance(type, 0).getClass().cast(array);
+	    	}
+	    	else if (cls.isEnum()) {
+	    		Object[] values = cls.getEnumConstants();
+	    		int index = rng.fromRange(0, values.length - 1);
+	    		return values[index];
 	    	}
 	    	else {
 	    		return createInstance(cls);
