@@ -26,14 +26,15 @@
 	    <artifactId>reflections</artifactId>
 	    <version>0.9.10</version>
 	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.knowm.xchart/xchart -->
+	<dependency>
+	    <groupId>org.knowm.xchart</groupId>
+	    <artifactId>xchart</artifactId>
+	    <version>3.5.2</version>
+	</dependency>
   </dependencies>
   <build>
   	<plugins>
-  		<plugin>
-  			<groupId>org.jacoco</groupId>
-  			<artifactId>jacoco-maven-plugin</artifactId>
-  			<version>0.7.5.201505241946</version>
-  		</plugin>
   		<plugin>
   			<groupId>org.apache.maven.plugins</groupId>
   			<artifactId>maven-shade-plugin</artifactId>
