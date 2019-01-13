@@ -6,10 +6,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.knowm.xchart.RadarChart;
-import org.knowm.xchart.RadarChartBuilder;
-import org.knowm.xchart.SwingWrapper;
-import org.knowm.xchart.XYChart;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
@@ -22,11 +18,8 @@ import rng_fuzzing.java_fuzzer.Fuzz;
  *
  */
 public class Engine {
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static void run(String[] args) {
-		Reflections reflections = new Reflections(new ConfigurationBuilder()
-				.setUrls(ClasspathHelper.forPackage(args[0])).setScanners(new MethodAnnotationsScanner()));
-		Set<Method> methods = reflections.getMethodsAnnotatedWith(Fuzz.class);
+	@SuppressWarnings({ "rawtypes" })
+	public static void run(Set<Method> methods) {
 		Map<Class, Set<Method>> map = new HashMap<Class, Set<Method>>();
 
 		// TODO: now that the runner fuzzes by method, don't need to sort by Class

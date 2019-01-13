@@ -2,12 +2,12 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>rng-fuzzing</groupId>
-  <artifactId>java_fuzzer</artifactId>
+  <groupId>sample.project</groupId>
+  <artifactId>example</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>java_fuzzer</name>
+  <name>example</name>
   <url>http://maven.apache.org</url>
 
   <properties>
@@ -22,24 +22,26 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-	    <groupId>org.reflections</groupId>
-	    <artifactId>reflections</artifactId>
-	    <version>0.9.10</version>
-	</dependency>
-	<!-- https://mvnrepository.com/artifact/org.knowm.xchart/xchart -->
-	<dependency>
-	    <groupId>org.knowm.xchart</groupId>
-	    <artifactId>xchart</artifactId>
-	    <version>3.5.2</version>
-	</dependency>
+      <groupId>rng-fuzzing</groupId>
+      <artifactId>buzz-maven-plugin</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
   </dependencies>
+  
   <build>
-  	<plugins>
-  		<plugin>
-  			<groupId>org.apache.maven.plugins</groupId>
-  			<artifactId>maven-shade-plugin</artifactId>
-  			<version>2.3</version>
-  		</plugin>
-  	</plugins>
+    <plugins>
+      <plugin>
+        <groupId>rng-fuzzing</groupId>
+        <artifactId>buzz-maven-plugin</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <executions>
+	      <execution>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+	     </execution>
+       </executions>
+      </plugin>
+    </plugins>
   </build>
 </project>
