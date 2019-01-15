@@ -1,7 +1,7 @@
 /**
  * 
  */
-package rng_fuzzing.java_fuzzer;
+package com.buzzfuzz.buzz;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;

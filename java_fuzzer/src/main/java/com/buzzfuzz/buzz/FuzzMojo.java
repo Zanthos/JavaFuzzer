@@ -1,4 +1,4 @@
-package rng_fuzzing.java_fuzzer;
+package com.buzzfuzz.buzz;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -19,11 +19,13 @@ import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
+import com.buzzfuzz.buzztools.Fuzz;
+
 /**
  * 
  * @author Rockett
  */
-@Mojo( name = "integration-test", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.RUNTIME )
+@Mojo( name = "integration-test", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.COMPILE )
 public class FuzzMojo  extends AbstractMojo
 {
 	
@@ -32,9 +34,10 @@ public class FuzzMojo  extends AbstractMojo
 	
 	public void execute() throws MojoExecutionException
     {
-		System.out.println("getting jar");
 		File jar = mavenProject.getArtifact().getFile();
-		System.out.println("Got the jar");
+		
+		if (jar == null)
+			throw new MojoExecutionException("No jar found. Make sure that a jar is built before running this goal directly.");
 		
 		Set<Method> methods = null;
 		
@@ -57,8 +60,6 @@ public class FuzzMojo  extends AbstractMojo
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		System.out.println(System.getProperty("java.class.path"));
 		
 		Engine.run(methods);
     }

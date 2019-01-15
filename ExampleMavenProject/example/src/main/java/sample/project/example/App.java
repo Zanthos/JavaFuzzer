@@ -1,6 +1,5 @@
 package sample.project.example;
 
-import rng_fuzzing.java_fuzzer.Fuzz;
 import test.BusinessLogic;
 
 /**

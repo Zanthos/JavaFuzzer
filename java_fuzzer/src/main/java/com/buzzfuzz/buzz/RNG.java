@@ -1,4 +1,4 @@
-package rng_fuzzing.java_fuzzer;
+package com.buzzfuzz.buzz;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;

@@ -2,8 +2,6 @@ package test;
 
 import java.util.Arrays;
 
-import rng_fuzzing.java_fuzzer.Fuzz;
-
 public class BusinessLogic {
 	
 	public enum State {
@@ -30,12 +28,12 @@ public class BusinessLogic {
 		super();
 	}
 
-	@Fuzz
+	@com.buzzfuzz.buzztools.Fuzz
 	public void exampleFunction1(int iTest, State eTest) throws Exception {
 		System.out.println("\tRunning with values: " + iTest + ", " + eTest);
 	}
 
-	@Fuzz
+	@com.buzzfuzz.buzztools.Fuzz
 	private void exampleFunction2(String sTest, DataClass[] daTest) {
 		System.out.println("\tRunning with values: " + sTest + ", " + Arrays.toString(daTest));
 	}

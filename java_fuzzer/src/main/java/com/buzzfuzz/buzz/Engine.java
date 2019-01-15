@@ -1,17 +1,10 @@
-package rng_fuzzing.java_fuzzer;
+package com.buzzfuzz.buzz;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
-
-import rng_fuzzing.java_fuzzer.Fuzz;
 
 /**
  * Hello world!

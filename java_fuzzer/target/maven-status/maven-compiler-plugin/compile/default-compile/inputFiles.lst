@@ -1,5 +1,4 @@
-/Users/Rockett/Projects/Fuzzing/JavaFuzzing/java_fuzzer/src/main/java/rng_fuzzing/java_fuzzer/FuzzMojo.java
-/Users/Rockett/Projects/Fuzzing/JavaFuzzing/java_fuzzer/src/main/java/rng_fuzzing/java_fuzzer/Runner.java
-/Users/Rockett/Projects/Fuzzing/JavaFuzzing/java_fuzzer/src/main/java/rng_fuzzing/java_fuzzer/Engine.java
-/Users/Rockett/Projects/Fuzzing/JavaFuzzing/java_fuzzer/src/main/java/rng_fuzzing/java_fuzzer/Fuzz.java
-/Users/Rockett/Projects/Fuzzing/JavaFuzzing/java_fuzzer/src/main/java/rng_fuzzing/java_fuzzer/RNG.java
+/Users/Rockett/Projects/Fuzzing/JavaFuzzing/java_fuzzer/src/main/java/com/buzzfuzz/buzz/FuzzMojo.java
+/Users/Rockett/Projects/Fuzzing/JavaFuzzing/java_fuzzer/src/main/java/com/buzzfuzz/buzz/Engine.java
+/Users/Rockett/Projects/Fuzzing/JavaFuzzing/java_fuzzer/src/main/java/com/buzzfuzz/buzz/RNG.java
+/Users/Rockett/Projects/Fuzzing/JavaFuzzing/java_fuzzer/src/main/java/com/buzzfuzz/buzz/Runner.java

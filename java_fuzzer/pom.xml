@@ -2,13 +2,13 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>rng-fuzzing</groupId>
+  <groupId>com.buzzfuzz.buzz</groupId>
   <artifactId>buzz-maven-plugin</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
-  <name>java_fuzzer</name>
-  <url>http://maven.apache.org</url>
+  <name>buzz</name>
+  <url>http://buzz.buzzfuzz.com</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -42,6 +42,11 @@
       <artifactId>maven-plugin-annotations</artifactId>
       <version>3.4</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.buzzfuzz.buzztools</groupId>
+      <artifactId>buzz-tools</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
     </dependency>
   </dependencies>
 </project>
