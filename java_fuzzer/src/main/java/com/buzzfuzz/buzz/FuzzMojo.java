@@ -16,6 +16,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
+import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
@@ -40,17 +41,20 @@ public class FuzzMojo  extends AbstractMojo
 			throw new MojoExecutionException("No jar found. Make sure that a jar is built before running this goal directly.");
 		
 		Set<Method> methods = null;
+		Reflections reflections = null;
 		
 		try {
 			URLClassLoader child = new URLClassLoader(
 			        new URL[] {jar.toURI().toURL()},
 			        this.getClass().getClassLoader()
 			);
-			Reflections reflections = new Reflections(new ConfigurationBuilder().setUrls(
+			reflections = new Reflections(new ConfigurationBuilder().setUrls(
 					ClasspathHelper
 					.forClassLoader(child))
 					.addClassLoader(child)
-					.addScanners(new MethodAnnotationsScanner()));
+					.addScanners(
+							new MethodAnnotationsScanner(),
+							new SubTypesScanner(false)));
 			methods = reflections.getMethodsAnnotatedWith(Fuzz.class);
 			for (Method meth : methods) {
 				System.out.println(meth.getName());
@@ -61,6 +65,6 @@ public class FuzzMojo  extends AbstractMojo
 			e.printStackTrace();
 		}
 		
-		Engine.run(methods);
+		Engine.run(methods, reflections);
     }
 }

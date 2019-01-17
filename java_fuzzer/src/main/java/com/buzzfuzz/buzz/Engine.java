@@ -1,18 +1,28 @@
 package com.buzzfuzz.buzz;
 
+import java.util.List;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.reflections.Reflections;
 
 /**
  * Hello world!
  *
  */
 public class Engine {
+	
+	public static Reflections reflections;
+	
 	@SuppressWarnings({ "rawtypes" })
-	public static void run(Set<Method> methods) {
+	public static void run(Set<Method> methods, Reflections reflect) {
+		
+		reflections = reflect;
+		
 		Map<Class, Set<Method>> map = new HashMap<Class, Set<Method>>();
 
 		// TODO: now that the runner fuzzes by method, don't need to sort by Class
@@ -28,11 +38,24 @@ public class Engine {
 			}
 		}
 
+		
+		List<Runner> runners = new ArrayList<Runner>();
+		
 		for (Map.Entry<Class, Set<Method>> entry : map.entrySet()) {
 			Class key = entry.getKey();
 			for (Method method : entry.getValue()) {
 				Runner runner = new Runner(key, method);
 				runner.start();
+				runners.add(runner);
+			}
+		}
+		
+		for (Runner runner : runners) {
+			try {
+				runner.join();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 
