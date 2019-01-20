@@ -40,7 +40,7 @@ public class FuzzMojo  extends AbstractMojo
 	
 	public void execute() throws MojoExecutionException
     {
-//		File file = mavenProject.getArtifact().getFile();
+		// Create a list of all relevant urls for loading .class files
 		List<String> srcRoots = null;
 		try {
 			srcRoots = mavenProject.getCompileClasspathElements();
@@ -48,7 +48,6 @@ public class FuzzMojo  extends AbstractMojo
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-//		List<?> srcRoots = mavenProject.getCompileSourceRoots();
 		URL[] urls = new URL[srcRoots.size()];
 		for (int i=0; i < srcRoots.size(); i++) {
 			try {
@@ -58,35 +57,27 @@ public class FuzzMojo  extends AbstractMojo
 				e.printStackTrace();
 			}
 		}
-//		File file = new File(projectBuildDir);
-		
-//		if (jar == null)
-//			throw new MojoExecutionException("No jar found. Make sure that a jar is built before running this goal directly.");
-		
-		Set<Method> methods = null;
-		Reflections reflections = null;
-		
-		//			URLClassLoader child = new URLClassLoader(
-		//			        new URL[] {jar.toURI().toURL()},
-		//			        this.getClass().getClassLoader()
-		//			);
-		//			System.out.println(file.toURI().toURL());
-		for (URL url : urls) {
-			System.out.println(url.toString());
-		}
 		URLClassLoader child = new URLClassLoader(
 				urls, 
 				this.getClass().getClassLoader());
-		reflections = new Reflections(new ConfigurationBuilder().setUrls(
+		
+		// Create Reflections object based on class loader
+		Reflections reflections = new Reflections(new ConfigurationBuilder().setUrls(
 				ClasspathHelper
 				.forClassLoader(child))
 				.addClassLoader(child)
 				.addScanners(
 						new MethodAnnotationsScanner(),
-						new SubTypesScanner(false)));
-		methods = reflections.getMethodsAnnotatedWith(Fuzz.class);
+						new SubTypesScanner(),
+						new CarefulMethodParameterScanner()));
+		
+//		for (String key : reflections.getStore().get("CarefulMethodParameterScanner").values()) {
+//			System.out.println(key);
+//		}
+		
+		Set<Method> methods = reflections.getMethodsAnnotatedWith(Fuzz.class);
 		for (Method meth : methods) {
-			System.out.println(meth.getName());
+			System.out.println("Fuzzing method " + meth.getName());
 		}
 		
 		Engine.run(methods, reflections);
