@@ -24,7 +24,7 @@ public class FactoryFinder extends InstanceFinder {
 	@Override
 	public Object attemptPath(Object choice) {
 		Method candidate = (Method)choice;
-		log("Attempting factory method " + candidate.getName());
+		log("Attempting factory method " + candidate.getName() + " from " + candidate.getDeclaringClass().getTypeName());
 		
 		Object instance = null;
 		

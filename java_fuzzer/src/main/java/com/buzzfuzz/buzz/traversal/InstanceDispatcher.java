@@ -61,15 +61,18 @@ public class InstanceDispatcher {
 	
 	public Object checkClasses(Class<?> target) {
 		
-		Object inst = new ConstructorFinder(this).findInstance(target);
+		Object inst = new FuzzConstructorFinder(this).findInstance(target);
 		if (inst == null) {
-			inst = new LocalFactoryFinder(this).findInstance(target);
+			inst = new ConstructorFinder(this).findInstance(target);
 			if (inst == null) {
-				inst = new FactoryFinder(this).findInstance(target);
+				inst = new LocalFactoryFinder(this).findInstance(target);
 				if (inst == null) {
-					inst = new SubclassFinder(this).findInstance(target);
-					if (inst == null)
-						log("Could not find a way to get an instance of this class.");
+					inst = new FactoryFinder(this).findInstance(target);
+					if (inst == null) {
+						inst = new SubclassFinder(this).findInstance(target);
+						if (inst == null)
+							log("Could not find a way to get an instance of this class.");
+					}
 				}
 			}
 		}

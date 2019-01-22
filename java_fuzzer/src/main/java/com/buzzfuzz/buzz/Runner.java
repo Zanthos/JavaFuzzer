@@ -31,7 +31,11 @@ public class Runner extends Thread {
 		while (count > 0) {
 			try {
 				Object instance = new InstanceDispatcher(rng).getInstance(initClass);
-				initMethod.invoke(instance, new InstanceDispatcher(rng).randomArgs(initMethod.getParameterTypes()));
+				Object result = initMethod.invoke(instance, new InstanceDispatcher(rng).randomArgs(initMethod.getParameterTypes()));
+				System.out.println();
+				System.out.println("Fuzzing finished and created: " + result.toString());
+				System.out.println();
+				
 			} catch (IllegalAccessException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
