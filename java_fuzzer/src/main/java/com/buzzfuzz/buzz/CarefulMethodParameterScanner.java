@@ -11,12 +11,12 @@ public class CarefulMethodParameterScanner extends AbstractScanner {
 
     @Override
     public void scan(Object cls) {
-        final MetadataAdapter md = getMetadataAdapter();
+        @SuppressWarnings("rawtypes")
+		final MetadataAdapter md = getMetadataAdapter();
 
         for (Object method : md.getMethods(cls)) {
 
         		if (md.getMethodName(method).contains("access")) {
-        			System.out.println("Found a baddie");
         			continue;
         		}
         	
