@@ -16,7 +16,7 @@ public class ConstructorFinder extends InstanceFinder {
 	@Override
 	public Object attemptPath(Object choice) {
 		Constructor<?> cntr = (Constructor<?>)choice;
-		Object[] args = new InstanceDispatcher(this).randomArgs(cntr.getParameterTypes());
+		Object[] args = new InstanceDispatcher(this).randomArgs(cntr.getParameterTypes(), cntr.getGenericParameterTypes());
 		if (args == null)
 			return null;
 		

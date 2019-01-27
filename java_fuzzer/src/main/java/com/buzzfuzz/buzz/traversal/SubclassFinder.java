@@ -27,7 +27,7 @@ public class SubclassFinder extends InstanceFinder {
 	@Override
 	public boolean validateChoice(Object choice, Class<?> target) {
 		// Any subType would be fine
-		return history.contains((Class<?>)choice);
+		return isClassinHistory((Class<?>)choice);
 	}
 
 }

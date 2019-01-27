@@ -8,11 +8,11 @@ import com.buzzfuzz.buzz.RNG;
 public abstract class InstanceFinder {
 	
 	ArrayList<?> options;
-	Set<Class<?>> history;
+	Set<ClassPkg> history;
 	RNG rng;
 	String logName = null;
 	
-	public InstanceFinder(Set<Class<?>> chain, RNG rng) {
+	public InstanceFinder(Set<ClassPkg> chain, RNG rng) {
 		history = chain;
 		this.rng = rng;
 	}
@@ -33,7 +33,7 @@ public abstract class InstanceFinder {
 	
 	public Object findInstance(Class<?> target) {
 		
-		log("Finding " + logName + " for type " + target.getTypeName());
+		log("Finding " + logName + " for type " + target.getSimpleName());
 		
 		// get group of options
 		options = getOptions(target);
@@ -41,7 +41,7 @@ public abstract class InstanceFinder {
 		// loop through options
 		while (true) {
 			if (options.size() == 0) {
-				log("Couldn't find " + logName + " for type " + target.getTypeName());
+				log("Couldn't find " + logName + " for type " + target.getSimpleName());
 				return null;
 			}
 			
@@ -50,6 +50,7 @@ public abstract class InstanceFinder {
 			Object choice = options.get(index);
 			
 			if (validateChoice(choice, target)) {
+				log("Already tried " + target.getSimpleName() + " before.");
 				options.remove(choice);
 				continue;
 			}
@@ -65,11 +66,23 @@ public abstract class InstanceFinder {
 		
 		// verify if the option is good
 	}
+
+	public boolean isClassinHistory(Class<?> target) {
+		for (ClassPkg pkg : history) {
+			if (pkg.getClazz().equals(target)) {
+				System.out.println("DONE BEFORE: " + target.getSimpleName());
+				return true;
+			}
+		}
+		System.out.println("NOT IN HISTORY: " + target.getSimpleName());
+		return false;
+	}
 	
 	public abstract Object attemptPath(Object choice);
 	
 	public abstract ArrayList<?> getOptions(Class<?> target);
 	
+	// Returns true is this choice is invalid
 	public abstract boolean validateChoice(Object choice, Class<?> target);
 
 }

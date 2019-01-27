@@ -14,7 +14,7 @@ public class FuzzConstructorFinder extends InstanceFinder {
 	@Override
 	public Object attemptPath(Object choice) {
 		Method fuzzCntr = (Method)choice;
-		Object[] args = new InstanceDispatcher(this).randomArgs(fuzzCntr.getParameterTypes());
+		Object[] args = new InstanceDispatcher(this).randomArgs(fuzzCntr.getParameterTypes(), fuzzCntr.getGenericParameterTypes());
 		if (args == null)
 			return null;
 		

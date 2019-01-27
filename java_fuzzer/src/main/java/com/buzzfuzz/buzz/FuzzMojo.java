@@ -38,6 +38,7 @@ public class FuzzMojo  extends AbstractMojo
 	@Parameter(defaultValue = "${project.build.directory}")
     private String projectBuildDir;
 	
+	@SuppressWarnings("unchecked")
 	public void execute() throws MojoExecutionException
     {
 		// Create a list of all relevant urls for loading .class files

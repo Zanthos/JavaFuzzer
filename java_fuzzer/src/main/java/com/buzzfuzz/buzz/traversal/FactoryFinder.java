@@ -17,8 +17,10 @@ public class FactoryFinder extends InstanceFinder {
 
 	public FactoryFinder(InstanceDispatcher dispatcher) {
 		super(dispatcher);
-		if (logName == null)
-			logName = "Factory";
+		logName = "Factory";
+		for (ClassPkg pkg : history) {
+			log(pkg.toString());
+		}
 	}
 
 	@Override
@@ -35,7 +37,7 @@ public class FactoryFinder extends InstanceFinder {
 			}
 		}
 		
-		Object[] args = new InstanceDispatcher(this).randomArgs(candidate.getParameterTypes());
+		Object[] args = new InstanceDispatcher(this).randomArgs(candidate.getParameterTypes(), candidate.getGenericParameterTypes());
 		if (args == null) {
 			return null;
 		}
@@ -76,8 +78,8 @@ public class FactoryFinder extends InstanceFinder {
 	@Override
 	public boolean validateChoice(Object choice, Class<?> target) {
 		// Factory methods could be within the current class, which would be in the history
-		Method methChoice = (Method)choice;
-		return history.contains(methChoice.getDeclaringClass()) || ((Method)choice).getDeclaringClass().equals(target);
+		Class<?> declaringClass = ((Method)choice).getDeclaringClass();
+		return isClassinHistory(declaringClass) || declaringClass.equals(target);
 	}
 
 }

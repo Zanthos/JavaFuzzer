@@ -6,6 +6,7 @@ package com.buzzfuzz.buzz;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import com.buzzfuzz.buzz.traversal.ClassPkg;
 import com.buzzfuzz.buzz.traversal.InstanceDispatcher;
 
 /**
@@ -27,11 +28,24 @@ public class Runner extends Thread {
 	}
 	
 	public void run() {
-		int count = 10;
+		int count = 50;
 		while (count > 0) {
 			try {
+//				Type[] genericParameterTypes = initMethod.getGenericParameterTypes();
+//				
+//				for(Type genericParameterType : genericParameterTypes){
+//				    if(genericParameterType instanceof ParameterizedType){
+//				        ParameterizedType aType = (ParameterizedType) genericParameterType;
+//				        Type[] parameterArgTypes = aType.getActualTypeArguments();
+//				        for(Type parameterArgType : parameterArgTypes){
+//				        		Class<?> parameterArgClass = (Class) parameterArgType;
+//				        		System.out.println(parameterArgClass.getName());
+//				        }
+//				    }
+//				}
 				Object instance = new InstanceDispatcher(rng).getInstance(initClass);
-				Object result = initMethod.invoke(instance, new InstanceDispatcher(rng).randomArgs(initMethod.getParameterTypes()));
+				Object result = initMethod.invoke(instance, new InstanceDispatcher(rng)
+						.randomArgs(initMethod.getParameterTypes(), initMethod.getGenericParameterTypes()));
 				System.out.println();
 				System.out.println("Fuzzing finished and created: " + result.toString());
 				System.out.println();
