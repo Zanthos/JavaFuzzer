@@ -18,9 +18,6 @@ public class FactoryFinder extends InstanceFinder {
 	public FactoryFinder(InstanceDispatcher dispatcher) {
 		super(dispatcher);
 		logName = "Factory";
-		for (ClassPkg pkg : history) {
-			log(pkg.toString());
-		}
 	}
 
 	@Override

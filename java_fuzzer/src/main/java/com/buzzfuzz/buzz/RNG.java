@@ -1,12 +1,18 @@
 package com.buzzfuzz.buzz;
 
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Random;
 
+import com.buzzfuzz.buzz.decisions.Config;
+import com.buzzfuzz.buzztools.FuzzConstraint;
+import com.buzzfuzz.buzztools.FuzzConstraints;
+
 public class RNG {
 	
 	private Random rand;
+	private Config config;
 
 	public RNG() {
 		this(System.currentTimeMillis());
@@ -14,6 +20,7 @@ public class RNG {
 
 	public RNG(long seed) {
 		rand = new Random(seed);
+		config = new Config();
 	}
 	
 	public int fromRange(int low, int high) {
@@ -108,5 +115,28 @@ public class RNG {
 		byte[] bytes = new byte[length];
 		rand.nextBytes(bytes);
 		return new String(bytes, Charset.forName("UTF-8"));
+	}
+	
+	public void parseConfig(Method method) {
+		FuzzConstraints constraintsAnnotation = method.getAnnotation(FuzzConstraints.class);
+		if (constraintsAnnotation != null) {
+			FuzzConstraint[] constraints = constraintsAnnotation.value();
+			
+			for( FuzzConstraint constraint : constraints ) {
+				evaluateConstraint(constraint);
+			}
+		} else {
+			// Maybe there is only one
+			FuzzConstraint constraintAnnotation = method.getAnnotation(FuzzConstraint.class);
+			if (constraintAnnotation != null) {
+				evaluateConstraint(constraintAnnotation);
+			}
+		}
+	}
+	
+	private void evaluateConstraint(FuzzConstraint constraint) {
+		String configFile = constraint.configFile();
+		if (configFile != null && !configFile.isEmpty())
+			this.config.addConfigFile(configFile);
 	}
 }

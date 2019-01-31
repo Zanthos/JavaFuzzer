@@ -68,14 +68,14 @@ public abstract class InstanceFinder {
 	}
 
 	public boolean isClassinHistory(Class<?> target) {
-		for (ClassPkg pkg : history) {
-			if (pkg.getClazz().equals(target)) {
-				System.out.println("DONE BEFORE: " + target.getSimpleName());
-				return true;
-			}
-		}
-		System.out.println("NOT IN HISTORY: " + target.getSimpleName());
-		return false;
+//		for (ClassPkg pkg : history) {
+//			if (pkg.getClazz().equals(target)) {
+//				System.out.println("DONE BEFORE: " + target.getSimpleName());
+//				return true;
+//			}
+//		}
+//		System.out.println("NOT IN HISTORY: " + target.getSimpleName());
+		return history.contains(new ClassPkg(target, null));
 	}
 	
 	public abstract Object attemptPath(Object choice);

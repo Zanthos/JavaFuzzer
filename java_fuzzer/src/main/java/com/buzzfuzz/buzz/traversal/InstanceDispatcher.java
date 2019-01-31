@@ -5,7 +5,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -59,6 +58,7 @@ public class InstanceDispatcher {
 			return null;
 		
 		history.add(target);
+		
 		Object instance = checkPrimatives(target.getClazz());
 		
 		if (instance == null) {
@@ -119,31 +119,18 @@ public class InstanceDispatcher {
 			Object[] values = target.getEnumConstants();
 			int index = rng.fromRange(0, values.length - 1);
 			return values[index];
-		} else if (target.isArray()) {
-			Class<?> type = target.getComponentType();
-			return randomArray(type);
 		} else {
 			return null;
 		}
 	}
 	
 	private Object checkCommon(ClassPkg target) {
-		if (target.getClazz().equals(List.class) ) {
-			
+		
+		if (target.getClazz().isArray()) {
+			Class<?> type = target.getClazz().getComponentType();
+			return randomArray(type);
+		} if (target.getClazz().equals(List.class) ) {
 			Class<?> type = (Class<?>)target.getGenerics()[0];
-			
-//			Type superClass = target.getGenericSuperclass();
-//			if (superClass == null)
-//				log("superClass is null");
-//			Class<?> type = (Class<?>) ((ParameterizedType)superClass).getActualTypeArguments()[0];
-//			if (type == null) {
-//				log("type is null");
-//			} else {
-//				log(type.getName());
-//			}
-//			Object instance = randomArray(type);
-//			if (instance == null)
-//				return null;
 			return Arrays.asList((Object[]) Array.newInstance(type, 0).getClass().cast(randomArray(type)));
 		}
 		return null;

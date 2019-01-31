@@ -5,8 +5,6 @@ package com.buzzfuzz.buzz;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
-import com.buzzfuzz.buzz.traversal.ClassPkg;
 import com.buzzfuzz.buzz.traversal.InstanceDispatcher;
 
 /**
@@ -22,27 +20,18 @@ public class Runner extends Thread {
 	@SuppressWarnings("rawtypes")
 	public Runner(Class cls, Method method) {
 		super();
-		rng = new RNG();
 		initClass = cls;
 		initMethod = method;
+		rng = new RNG();
 	}
 	
 	public void run() {
-		int count = 50;
+		
+		rng.parseConfig(initMethod);
+		
+		int count = 1;
 		while (count > 0) {
 			try {
-//				Type[] genericParameterTypes = initMethod.getGenericParameterTypes();
-//				
-//				for(Type genericParameterType : genericParameterTypes){
-//				    if(genericParameterType instanceof ParameterizedType){
-//				        ParameterizedType aType = (ParameterizedType) genericParameterType;
-//				        Type[] parameterArgTypes = aType.getActualTypeArguments();
-//				        for(Type parameterArgType : parameterArgTypes){
-//				        		Class<?> parameterArgClass = (Class) parameterArgType;
-//				        		System.out.println(parameterArgClass.getName());
-//				        }
-//				    }
-//				}
 				Object instance = new InstanceDispatcher(rng).getInstance(initClass);
 				Object result = initMethod.invoke(instance, new InstanceDispatcher(rng)
 						.randomArgs(initMethod.getParameterTypes(), initMethod.getGenericParameterTypes()));

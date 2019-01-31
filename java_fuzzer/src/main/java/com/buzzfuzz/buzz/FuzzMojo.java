@@ -23,6 +23,7 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
 import com.buzzfuzz.buzztools.Fuzz;
+import com.buzzfuzz.buzz.CarefulMethodParameterScanner;
 
 /**
  * 
