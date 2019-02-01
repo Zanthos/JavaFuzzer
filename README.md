@@ -18,7 +18,7 @@ This project takes the form of a maven plugin that provides the fuzzing lifecycl
 
 You can use the annotations by adding the following you your pom.xml
 
-'''
+'''xml
 	<dependencies>
         <dependency>
 	      <groupId>com.buzzfuzz.buzztools</groupId>
@@ -30,7 +30,7 @@ You can use the annotations by adding the following you your pom.xml
 
 You can then add the maven plugin that drives these annotations by adding the following to your pom.xml
 
-'''
+'''xml
 	<plugin>
 		<groupId>com.buzzfuzz.buzz</groupId>
 		<artifactId>buzz-maven-plugin</artifactId>
@@ -60,7 +60,7 @@ In addition to allowing the engine to attempt to build example instances of the 
 
 As you can see, the configuration can either be set directly in the annotation using an objectPath followed by certain constraints like lowerBound, or by specifying a file that indicates these constraints in a similar fassion. Below is what one of these configuration files should look like
 
-'''
+'''xml
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
     <scopes>
