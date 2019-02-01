@@ -6,5 +6,9 @@ public class Target {
 	public void setInstancePath(String path) {
 		this.instancePath = path;
 	}
+	
+	public String getInstancePath() {
+		return this.instancePath;
+	}
 
 }

@@ -1,9 +1,11 @@
 package com.buzzfuzz.buzz.traversal;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Set;
 
 import com.buzzfuzz.buzz.RNG;
+import com.buzzfuzz.buzz.decisions.Context;
 
 public abstract class InstanceFinder {
 	
@@ -49,7 +51,9 @@ public abstract class InstanceFinder {
 			
 			Object choice = options.get(index);
 			
-			if (validateChoice(choice, target)) {
+			Context context = getContext(choice, target);
+			
+			if (validateChoice(choice, target) && !rng.should(context)) {
 				log("Already tried " + target.getSimpleName() + " before.");
 				options.remove(choice);
 				continue;
@@ -68,13 +72,6 @@ public abstract class InstanceFinder {
 	}
 
 	public boolean isClassinHistory(Class<?> target) {
-//		for (ClassPkg pkg : history) {
-//			if (pkg.getClazz().equals(target)) {
-//				System.out.println("DONE BEFORE: " + target.getSimpleName());
-//				return true;
-//			}
-//		}
-//		System.out.println("NOT IN HISTORY: " + target.getSimpleName());
 		return history.contains(new ClassPkg(target, null));
 	}
 	
@@ -84,5 +81,28 @@ public abstract class InstanceFinder {
 	
 	// Returns true is this choice is invalid
 	public abstract boolean validateChoice(Object choice, Class<?> target);
+	
+	private Context getContext(Object choice, Class<?> target) {
+		Context context = new Context();
+		String instancePath = "";
+		for (ClassPkg instance : history) {
+			instancePath += instance.getClazz().getSimpleName();
+			if (instance.getGenerics() != null) {
+				instancePath += '<';
+				for (Type generic : instance.getGenerics()) {
+					instancePath += generic.getTypeName() + ',';
+				}
+				instancePath = instancePath.substring(0, instancePath.length()-2);
+				instancePath += '>';
+			}
+			instancePath += '.';
+		}
+		instancePath += target.getSimpleName();
+		context.setInstancePath(instancePath);
+		
+		log(instancePath);
+		
+		return context;
+	}
 
 }

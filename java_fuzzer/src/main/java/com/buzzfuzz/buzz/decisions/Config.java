@@ -41,7 +41,7 @@ public class Config {
 					}
 				}
 				
-				this.config = fileConfig;
+				mergeNewTree(fileConfig);
 //				mergeNewTree(fileConfig);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -52,7 +52,8 @@ public class Config {
 	}
 	
 	private void mergeNewTree(ConfigTree tree) {
-		mergeScopes(this.config.getRoot(), tree.getRoot());
+		config = tree;
+//		mergeScopes(this.config.getRoot(), tree.getRoot());
 	}
 	
 	private void mergeScopes(Scope initS, Scope newS) {
@@ -115,5 +116,42 @@ public class Config {
 		
 		return constraint;
 	}
+
+	public Constraint findConstraintFor(Context context) {
+		return findConstraintFor(context, config.getRoot()).x;
+	}
+	
+	private Tuple<Constraint, Integer> findConstraintFor(Context context, Scope scope) {
+		if (validateContext(scope.getTarget(), context)) {
+			// Should also build up the constraints as we go down
+			// This is getting complicated
+			Constraint constraint = scope.getConstraint();
+			int maxDepth = 0;
+			for (Scope child : scope.getChildren()) {
+				Tuple<Constraint, Integer> result = findConstraintFor(context, child);
+				if (result.y >= maxDepth) {
+					constraint.override(result.x);
+					maxDepth = result.y;
+				}
+			}
+			return new Tuple<Constraint, Integer>(constraint, maxDepth);
+		}
+		return null;
+	}
+	
+	private boolean validateContext(Target target, Context context) {
+		if (context.getInstancePath() != null && target.getInstancePath() != null)
+			return context.getInstancePath().equals(target.getInstancePath()); // Eventually use regex
+		return true; // This should have a lot of things later
+	}
+	
+	public class Tuple<X, Y> { 
+		public final X x; 
+		public final Y y; 
+		public Tuple(X x, Y y) { 
+			this.x = x; 
+			this.y = y; 
+		} 
+	} 
 
 }

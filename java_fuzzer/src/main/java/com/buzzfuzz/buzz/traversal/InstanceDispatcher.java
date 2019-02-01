@@ -7,7 +7,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -20,7 +20,7 @@ public class InstanceDispatcher {
 	
 	public InstanceDispatcher(RNG rng, Set<ClassPkg> chain) {
 		this.rng = rng;
-		history = chain == null ? new HashSet<ClassPkg>() : new HashSet<ClassPkg>(chain);
+		history = chain == null ? new LinkedHashSet<ClassPkg>() : new LinkedHashSet<ClassPkg>(chain);
 	}
 	
 	public InstanceDispatcher(RNG rng) {

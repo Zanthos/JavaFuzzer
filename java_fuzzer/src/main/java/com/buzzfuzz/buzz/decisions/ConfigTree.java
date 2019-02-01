@@ -28,8 +28,16 @@ public class ConfigTree {
         		this.target = t;
         }
         
+        public Target getTarget() {
+        		return this.target;
+        }
+        
         public void setConstraint(Constraint c) {
         		this.constraint = c;
+        }
+        
+        public Constraint getConstraint() {
+        		return this.constraint;
         }
         
         public List<Scope> getChildren() {

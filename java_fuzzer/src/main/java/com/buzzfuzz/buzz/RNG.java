@@ -6,6 +6,8 @@ import java.nio.charset.Charset;
 import java.util.Random;
 
 import com.buzzfuzz.buzz.decisions.Config;
+import com.buzzfuzz.buzz.decisions.Constraint;
+import com.buzzfuzz.buzz.decisions.Context;
 import com.buzzfuzz.buzztools.FuzzConstraint;
 import com.buzzfuzz.buzztools.FuzzConstraints;
 
@@ -138,5 +140,14 @@ public class RNG {
 		String configFile = constraint.configFile();
 		if (configFile != null && !configFile.isEmpty())
 			this.config.addConfigFile(configFile);
+	}
+	
+	public boolean should(Context context) {
+		Constraint constraint = config.findConstraintFor(context);
+		double prob = constraint.getProb();
+		double chance = fromRange(0.0, 1.0);
+		if (prob > chance)
+			return true;
+		else return false;
 	}
 }
