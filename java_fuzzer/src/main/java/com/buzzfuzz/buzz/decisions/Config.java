@@ -1,18 +1,17 @@
 package com.buzzfuzz.buzz.decisions;
 
-import java.io.ByteArrayInputStream;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.buzzfuzz.buzz.decisions.ConfigTree.Scope;
+import com.buzzfuzz.buzz.decisions.Target;
 
 public class Config {
 	
@@ -73,18 +72,17 @@ public class Config {
 			Node xmlScope = xmlScopes.item(i);
 			if (xmlScope.getNodeName().equals("scope")) {
 				Scope scope = new Scope();
-				NamedNodeMap satt = xmlScope.getAttributes();
-				Node target;
-				if ((target = satt.getNamedItem("Target")) != null) {
-					scope.setTarget(parseTarget(target));
-				}
-				Node constraint;
-				if ((constraint = satt.getNamedItem("Constraint")) != null) {
-					scope.setConstraint(parseConstraint(constraint));
-				}
-				Node scopes;
-				if ((scopes = satt.getNamedItem("Scopes")) != null) {
-					evaluateScopes(scopes.getChildNodes(), scope);
+				NodeList schild = xmlScope.getChildNodes();
+				for (int j=0; j < schild.getLength(); j++) {
+					Node sAtt = schild.item(j);
+					
+					if (sAtt.getNodeName().equals("Target")) {
+						scope.setTarget(parseTarget(sAtt));
+					} else if (sAtt.getNodeName().equals("Constraint")) {
+						scope.setConstraint(parseConstraint(sAtt));
+					} else if (sAtt.getNodeName().equals("Scopes")) {
+						evaluateScopes(sAtt.getChildNodes(), scope);
+					}
 				}
 				configScope.addChild(scope);
 			}
@@ -92,26 +90,31 @@ public class Config {
 	}
 	
 	private Target parseTarget(Node xmlTarget) {
-		NamedNodeMap tAtts = xmlTarget.getAttributes();
+		NodeList tAtts = xmlTarget.getChildNodes();
 		Target target = new Target();
 		
-		Node instancePath;
-		if ((instancePath = tAtts.getNamedItem("instancePath")) != null) {
-			target.setInstancePath(instancePath.getNodeValue());
+		for (int i=0; i < tAtts.getLength(); i++) {
+			Node child = tAtts.item(i);
+			if (child.getNodeName().equals("instancePath")) {
+				target.setInstancePath(child.getNodeValue());
+			}
+			// More later
 		}
 		
 		return target;
 	}
 	
 	private Constraint parseConstraint(Node xmlConstraint) {
-		NamedNodeMap cAtts = xmlConstraint.getAttributes();
+		NodeList cAtts = xmlConstraint.getChildNodes();
 		Constraint constraint = new Constraint();
 		
-		Node nullProb;
-		if ((nullProb = cAtts.getNamedItem("nullProb")) != null) {
-			double value = Double.parseDouble(nullProb.getNodeValue());
-			// might want to verify that it is within 0 and 1.0
-			constraint.setNullProb(value);
+		for (int i=0; i < cAtts.getLength(); i++) {
+			Node child = cAtts.item(i);
+			if (child.getNodeName().equals("nullProb")) {
+				double value = Double.parseDouble(child.getNodeValue());
+				// might want to verify that it is within 0 and 1.0
+				constraint.setNullProb(value);
+			}
 		}
 		
 		return constraint;
@@ -126,12 +129,18 @@ public class Config {
 			// Should also build up the constraints as we go down
 			// This is getting complicated
 			Constraint constraint = scope.getConstraint();
+			if (constraint != null)
+				System.out.println("VALIDATED CONSTRAINT: " + constraint.getNullProb());
 			int maxDepth = 0;
-			for (Scope child : scope.getChildren()) {
-				Tuple<Constraint, Integer> result = findConstraintFor(context, child);
-				if (result.y >= maxDepth) {
-					constraint.override(result.x);
-					maxDepth = result.y;
+			if (scope.getChildren() != null) {
+				for (Scope child : scope.getChildren()) {
+					Tuple<Constraint, Integer> result = findConstraintFor(context, child);
+					if (result.y >= maxDepth) {
+						if (constraint == null)
+							constraint = result.x;
+						else constraint.override(result.x);
+						maxDepth = result.y;
+					}
 				}
 			}
 			return new Tuple<Constraint, Integer>(constraint, maxDepth);
@@ -140,9 +149,13 @@ public class Config {
 	}
 	
 	private boolean validateContext(Target target, Context context) {
+		if (target == null) {
+			System.out.println("TARGET WAS NULL");
+			return true;
+		}
 		if (context.getInstancePath() != null && target.getInstancePath() != null)
-			return context.getInstancePath().equals(target.getInstancePath()); // Eventually use regex
-		return true; // This should have a lot of things later
+			return context.getInstancePath().contains(target.getInstancePath()); // Eventually use regex
+		return false; // This should have a lot of things later
 	}
 	
 	public class Tuple<X, Y> { 

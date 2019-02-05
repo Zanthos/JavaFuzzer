@@ -8,6 +8,10 @@ public class Constraint {
 		this.nullProb = prob;
 	}
 	
+	public double getNullProb() {
+		return this.nullProb;
+	}
+	
 	public void setProb(double prob) {
 		this.prob = prob;
 	}

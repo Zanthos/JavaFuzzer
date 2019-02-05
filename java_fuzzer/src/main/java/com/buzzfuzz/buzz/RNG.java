@@ -144,9 +144,12 @@ public class RNG {
 	
 	public boolean should(Context context) {
 		Constraint constraint = config.findConstraintFor(context);
-		double prob = constraint.getProb();
+		if (constraint == null)
+			return true; // should have default constraint later
+		double prob = constraint.getNullProb();
+		System.out.println("CONFIG PROB: " + prob);
 		double chance = fromRange(0.0, 1.0);
-		if (prob > chance)
+		if (chance > prob)
 			return true;
 		else return false;
 	}
