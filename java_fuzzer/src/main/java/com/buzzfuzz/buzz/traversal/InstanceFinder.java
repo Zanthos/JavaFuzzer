@@ -53,7 +53,12 @@ public abstract class InstanceFinder {
 			
 			Context context = getContext(choice, target);
 			
-			if (validateChoice(choice, target) && !rng.should(context)) {
+			if (!rng.should(context)) {
+				log("SETTING TO NULL BECAUSE OF NULLPROB");
+				return null;
+			}
+			
+			if (validateChoice(choice, target)) {
 				log("Already tried " + target.getSimpleName() + " before.");
 				options.remove(choice);
 				continue;
@@ -92,12 +97,12 @@ public abstract class InstanceFinder {
 				for (Type generic : instance.getGenerics()) {
 					instancePath += generic.getTypeName() + ',';
 				}
-				instancePath = instancePath.substring(0, instancePath.length()-2);
+				instancePath = instancePath.substring(0, instancePath.length()-1);
 				instancePath += '>';
 			}
 			instancePath += '.';
 		}
-		instancePath += target.getSimpleName();
+		instancePath = instancePath.substring(0, instancePath.length()-1);
 		context.setInstancePath(instancePath);
 		
 		log(instancePath);

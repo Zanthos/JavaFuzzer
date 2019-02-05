@@ -4,16 +4,27 @@ public class Constraint {
 	private Double nullProb;
 	private Double prob;
 	
-	public void setNullProb(double prob) {
+	public void setNullProb(Double prob) {
 		this.nullProb = prob;
 	}
 	
-	public void setProb(double prob) {
+	public Double getNullProb() {
+		return this.nullProb;
+	}
+	
+	public void setProb(Double prob) {
 		this.prob = prob;
 	}
 	
-	public double getProb() {
+	public Double getProb() {
 		return this.prob;
+	}
+	
+	public Constraint clone() {
+		Constraint clone = new Constraint();
+		clone.setNullProb(this.nullProb);
+		clone.setProb(this.prob);
+		return clone;
 	}
 	
 	public void override(Constraint constraint) {
@@ -21,6 +32,5 @@ public class Constraint {
 			this.nullProb = constraint.nullProb;
 		if (constraint.prob != null)
 			this.prob = constraint.prob;
-			
 	}
 }

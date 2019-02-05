@@ -8,7 +8,6 @@ public class ConfigTree {
 
     public ConfigTree() {
         root = new Scope();
-        root.children = new ArrayList<Scope>();
     }
     
     public Scope getRoot() {
@@ -19,6 +18,10 @@ public class ConfigTree {
         private Target target;
         private Constraint constraint;
         private List<Scope> children;
+        
+        public Scope() {
+        		this.children = new ArrayList<Scope>();
+        }
         
         public void addChild(Scope scope) {
         		children.add(scope);
