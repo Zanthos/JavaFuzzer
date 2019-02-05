@@ -6,7 +6,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -76,11 +75,11 @@ public class Config {
 				for (int j=0; j < schild.getLength(); j++) {
 					Node sAtt = schild.item(j);
 					
-					if (sAtt.getNodeName().equals("Target")) {
+					if (sAtt.getNodeName().equals("target")) {
 						scope.setTarget(parseTarget(sAtt));
-					} else if (sAtt.getNodeName().equals("Constraint")) {
+					} else if (sAtt.getNodeName().equals("constraint")) {
 						scope.setConstraint(parseConstraint(sAtt));
-					} else if (sAtt.getNodeName().equals("Scopes")) {
+					} else if (sAtt.getNodeName().equals("scopes")) {
 						evaluateScopes(sAtt.getChildNodes(), scope);
 					}
 				}
@@ -96,7 +95,8 @@ public class Config {
 		for (int i=0; i < tAtts.getLength(); i++) {
 			Node child = tAtts.item(i);
 			if (child.getNodeName().equals("instancePath")) {
-				target.setInstancePath(child.getNodeValue());
+				System.out.println("Target value: " + child.getTextContent());
+				target.setInstancePath(child.getTextContent());
 			}
 			// More later
 		}
@@ -111,7 +111,8 @@ public class Config {
 		for (int i=0; i < cAtts.getLength(); i++) {
 			Node child = cAtts.item(i);
 			if (child.getNodeName().equals("nullProb")) {
-				double value = Double.parseDouble(child.getNodeValue());
+				System.out.println("Constraint value: " + child.getTextContent());
+				double value = Double.parseDouble(child.getTextContent());
 				// might want to verify that it is within 0 and 1.0
 				constraint.setNullProb(value);
 			}
@@ -128,13 +129,13 @@ public class Config {
 		if (validateContext(scope.getTarget(), context)) {
 			// Should also build up the constraints as we go down
 			// This is getting complicated
-			Constraint constraint = scope.getConstraint();
-			if (constraint != null)
-				System.out.println("VALIDATED CONSTRAINT: " + constraint.getNullProb());
+			Constraint constraint = (scope.getConstraint() == null) ? null : scope.getConstraint().clone();
 			int maxDepth = 0;
 			if (scope.getChildren() != null) {
 				for (Scope child : scope.getChildren()) {
 					Tuple<Constraint, Integer> result = findConstraintFor(context, child);
+					if (result == null)
+						continue;
 					if (result.y >= maxDepth) {
 						if (constraint == null)
 							constraint = result.x;
@@ -150,11 +151,10 @@ public class Config {
 	
 	private boolean validateContext(Target target, Context context) {
 		if (target == null) {
-			System.out.println("TARGET WAS NULL");
 			return true;
-		}
-		if (context.getInstancePath() != null && target.getInstancePath() != null)
+		} else if (context.getInstancePath() != null && target.getInstancePath() != null) {
 			return context.getInstancePath().contains(target.getInstancePath()); // Eventually use regex
+		}
 		return false; // This should have a lot of things later
 	}
 	

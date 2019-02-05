@@ -102,7 +102,6 @@ public abstract class InstanceFinder {
 			}
 			instancePath += '.';
 		}
-//		instancePath += target.getSimpleName();
 		instancePath = instancePath.substring(0, instancePath.length()-1);
 		context.setInstancePath(instancePath);
 		
