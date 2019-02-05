@@ -31,6 +31,10 @@ public class RNG {
 		return this.seed;
 	}
 	
+	public Random getRNG() {
+		return this.rand;
+	}
+	
 	public int fromRange(int low, int high) {
 		if (low > high) {
 			int temp = low;

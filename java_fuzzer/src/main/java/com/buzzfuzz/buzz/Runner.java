@@ -29,7 +29,7 @@ public class Runner extends Thread {
 		
 		rng.parseConfig(initMethod);
 		
-		int count = 1;
+		int count = 500;
 		while (count > 0) {
 			try {
 				Object instance = new InstanceDispatcher(rng).getInstance(initClass);

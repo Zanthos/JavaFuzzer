@@ -6,12 +6,14 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 import com.buzzfuzz.buzz.RNG;
+import com.buzzfuzz.buzz.decisions.Context;
 
 public class InstanceDispatcher {
 	
@@ -76,7 +78,33 @@ public class InstanceDispatcher {
 		return getInstance(new ClassPkg(target, null));
 	}
 	
+	private Context getContext(Class<?> target) {
+		Context context = new Context();
+		String instancePath = "";
+		for (ClassPkg instance : history) {
+			instancePath += instance.getClazz().getSimpleName();
+			if (instance.getGenerics() != null) {
+				instancePath += '<';
+				for (Type generic : instance.getGenerics()) {
+					instancePath += generic.getTypeName() + ',';
+				}
+				instancePath = instancePath.substring(0, instancePath.length()-1);
+				instancePath += '>';
+			}
+			instancePath += '.';
+		}
+		instancePath = instancePath.substring(0, instancePath.length()-1);
+		context.setInstancePath(instancePath);
+		
+		log(instancePath);
+		
+		return context;
+	}
+	
 	public Object checkClasses(Class<?> target) {
+		
+		if (!rng.should(getContext(target)))
+			return null;
 		
 		Object inst = new FuzzConstructorFinder(this).findInstance(target);
 		if (inst == null) {
@@ -131,7 +159,12 @@ public class InstanceDispatcher {
 			return randomArray(type);
 		} if (target.getClazz().equals(List.class) ) {
 			Class<?> type = (Class<?>)target.getGenerics()[0];
-			return Arrays.asList((Object[]) Array.newInstance(type, 0).getClass().cast(randomArray(type)));
+			Object array = randomArray(type);
+			if (array != null)
+				return Arrays.asList((Object[]) Array.newInstance(type, 0).getClass().cast(array));
+			else return null;
+		} else if (target.getClass().equals(BigInteger.class)) {
+			return new BigInteger(rng.fromRange(2, 32), rng.getRNG());
 		}
 		return null;
 	}

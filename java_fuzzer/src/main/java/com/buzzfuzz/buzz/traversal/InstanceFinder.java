@@ -1,11 +1,9 @@
 package com.buzzfuzz.buzz.traversal;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Set;
 
 import com.buzzfuzz.buzz.RNG;
-import com.buzzfuzz.buzz.decisions.Context;
 
 public abstract class InstanceFinder {
 	
@@ -51,13 +49,6 @@ public abstract class InstanceFinder {
 			
 			Object choice = options.get(index);
 			
-			Context context = getContext(choice, target);
-			
-			if (!rng.should(context)) {
-				log("SETTING TO NULL BECAUSE OF NULLPROB");
-				return null;
-			}
-			
 			if (validateChoice(choice, target)) {
 				log("Already tried " + target.getSimpleName() + " before.");
 				options.remove(choice);
@@ -86,28 +77,5 @@ public abstract class InstanceFinder {
 	
 	// Returns true is this choice is invalid
 	public abstract boolean validateChoice(Object choice, Class<?> target);
-	
-	private Context getContext(Object choice, Class<?> target) {
-		Context context = new Context();
-		String instancePath = "";
-		for (ClassPkg instance : history) {
-			instancePath += instance.getClazz().getSimpleName();
-			if (instance.getGenerics() != null) {
-				instancePath += '<';
-				for (Type generic : instance.getGenerics()) {
-					instancePath += generic.getTypeName() + ',';
-				}
-				instancePath = instancePath.substring(0, instancePath.length()-1);
-				instancePath += '>';
-			}
-			instancePath += '.';
-		}
-		instancePath = instancePath.substring(0, instancePath.length()-1);
-		context.setInstancePath(instancePath);
-		
-		log(instancePath);
-		
-		return context;
-	}
 
 }
