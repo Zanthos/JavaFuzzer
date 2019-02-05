@@ -1,8 +1,9 @@
 package com.buzzfuzz.buzz.traversal;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+
+import com.buzzfuzz.buzz.Engine;
 
 public class FuzzConstructorFinder extends InstanceFinder {
 
@@ -21,15 +22,8 @@ public class FuzzConstructorFinder extends InstanceFinder {
 		Object instance = null;
 		try {
 			instance = fuzzCntr.invoke(null, args);
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			Engine.log(e, rng.getSeed());
 		}
 		
 		return instance;

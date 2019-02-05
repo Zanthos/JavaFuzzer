@@ -15,14 +15,20 @@ public class RNG {
 	
 	private Random rand;
 	private Config config;
+	private long seed;
 
 	public RNG() {
 		this(System.currentTimeMillis());
 	}
 
 	public RNG(long seed) {
+		this.seed = seed;
 		rand = new Random(seed);
 		config = new Config();
+	}
+	
+	public long getSeed() {
+		return this.seed;
 	}
 	
 	public int fromRange(int low, int high) {

@@ -1,8 +1,9 @@
 package com.buzzfuzz.buzz.traversal;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+
+import com.buzzfuzz.buzz.Engine;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
 
@@ -23,18 +24,9 @@ public class ConstructorFinder extends InstanceFinder {
 		Object instance = null;
 		try {
 			instance = cntr.newInstance(args);
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			Engine.log(e, rng.getSeed());
+			// Eventually use this exception to drive config
 		}
 		
 		return instance;

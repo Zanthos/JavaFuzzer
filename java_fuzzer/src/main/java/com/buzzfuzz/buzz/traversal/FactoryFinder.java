@@ -1,6 +1,5 @@
 package com.buzzfuzz.buzz.traversal;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -42,15 +41,8 @@ public class FactoryFinder extends InstanceFinder {
 		Object outcome = null;
 		try {
 			outcome = candidate.invoke(instance, args);
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			Engine.log(e, rng.getSeed());
 		}
 		
 		return outcome;

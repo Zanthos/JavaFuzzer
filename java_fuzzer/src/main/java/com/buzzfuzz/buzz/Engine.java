@@ -1,7 +1,11 @@
 package com.buzzfuzz.buzz;
 
 import java.util.List;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,9 +22,20 @@ public class Engine {
 	
 	public static Reflections reflections;
 	
+	public static String outputDir = "${project.build.directory}";
+	private static String buzzDir = "buzz-reports";
+	
+	private static boolean writing = false;
+	
 	@SuppressWarnings({ "rawtypes" })
 	public static void run(Set<Method> methods, Reflections reflect) {
 		
+		// Make reports directory if it doesn't already exist
+		File directory = Paths.get(outputDir, buzzDir).toFile();
+	    if (! directory.exists()){
+	        directory.mkdir();
+	    }
+
 		reflections = reflect;
 		
 		Map<Class, Set<Method>> map = new HashMap<Class, Set<Method>>();
@@ -38,7 +53,6 @@ public class Engine {
 			}
 		}
 
-		
 		List<Runner> runners = new ArrayList<Runner>();
 		
 		for (Map.Entry<Class, Set<Method>> entry : map.entrySet()) {
@@ -58,32 +72,40 @@ public class Engine {
 				e.printStackTrace();
 			}
 		}
-
-		// Create Chart
-//		RadarChart chart = new RadarChartBuilder().width(500).height(500).title("Performance Breakdown").build();
-//		
-//		chart.setVariableLabels(
-//	        new String[] {
-//	          "Duration",
-//	          "Code Coverage",
-//	          "Crashes Found",
-//	          "Timeouts Found",
-//	          "Originality of Crashes",
-//	          "Originality of Timeouts"
-//	        });
-//		
-//		chart.addSeries("Monte Carlo", new double[] { 0.2, 1.0, 0.25, 0.44, 0.85, 0.19 });
-//		chart.addSeries("Mutation Based", new double[] { 0.8, 0.79, 0.25, 0.44, 0.85, 0.19 });
-//		chart.addSeries("Generation Based", new double[] { 0.52, 0.60, 0.74, 0.94, 0.26, 0.27 });
-//		chart.addSeries("My own strategy", new double[] { 0.0, 1.0, 1.0, 1.0, 1.0, 1.0 });
-//		
-//		// Show it
-//		new SwingWrapper(chart).displayChart();
-
-//		// Save it
-//		BitmapEncoder.saveBitmap(chart, "./Sample_Chart", BitmapFormat.PNG);
-//
-//		// or save it in high-res
-//		BitmapEncoder.saveBitmapWithDPI(chart, "./Sample_Chart_300_DPI", BitmapFormat.PNG, 300);
+	}
+	
+	public static void log(Exception e, long seed) {
+		// Wait until we aren't writing
+		while(writing);
+		
+		// start lock (should probably do this in a better way
+		writing = true;
+		
+		File crashDir = Paths.get(
+				outputDir, 
+				buzzDir, 
+				e.getStackTrace()[0].getMethodName() + ":" + e.getStackTrace()[0].getLineNumber(),
+				e.getClass().getSimpleName()).toFile();
+		if (!crashDir.exists())
+			crashDir.mkdirs();
+		
+		File example = Paths.get(crashDir.getPath(), Long.toString(seed)).toFile();
+		if (example.exists())
+			example.delete();
+			
+		example.mkdir();
+		File strace = Paths.get(example.getPath(), "stacktrace.txt").toFile();
+		PrintStream ps;
+		try {
+			ps = new PrintStream(strace);
+			e.printStackTrace(ps);
+			ps.close();
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		}
+		
+		// end lock
+		writing = false;
+		
 	}
 }

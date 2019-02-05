@@ -36,8 +36,11 @@ public class FuzzMojo  extends AbstractMojo
 	@Parameter( defaultValue = "${project}", readonly = true, required = true )
 	private MavenProject mavenProject;
 	
+//	@Parameter(defaultValue = "${project.build.outputDirectory}")
+//    private String projectBuildDir;
+	
 	@Parameter(defaultValue = "${project.build.directory}")
-    private String projectBuildDir;
+    private String projectOutputDir;
 	
 	@SuppressWarnings("unchecked")
 	public void execute() throws MojoExecutionException
@@ -81,6 +84,8 @@ public class FuzzMojo  extends AbstractMojo
 		for (Method meth : methods) {
 			System.out.println("Fuzzing method " + meth.getName());
 		}
+		
+		Engine.outputDir = projectOutputDir;
 		
 		Engine.run(methods, reflections);
     }
