@@ -74,17 +74,20 @@ public class Engine {
 		}
 	}
 	
-	public static void log(Exception e, long seed) {
+	public static void log(Exception t, long seed) {
+		Throwable e = t.getCause();
 		// Wait until we aren't writing
 		while(writing);
 		
 		// start lock (should probably do this in a better way
 		writing = true;
 		
+		StackTraceElement recentCrash = e.getStackTrace()[0];
+		
 		File crashDir = Paths.get(
 				outputDir, 
 				buzzDir, 
-				e.getStackTrace()[0].getMethodName() + ":" + e.getStackTrace()[0].getLineNumber(),
+				recentCrash.getClassName().substring(recentCrash.getClassName().lastIndexOf('.')+1) + '.' + recentCrash.getMethodName() + "():" + recentCrash.getLineNumber(),
 				e.getClass().getSimpleName()).toFile();
 		if (!crashDir.exists())
 			crashDir.mkdirs();
@@ -99,6 +102,10 @@ public class Engine {
 		try {
 			ps = new PrintStream(strace);
 			e.printStackTrace(ps);
+			
+			// In the future, can strip off parts of stacktrace that go into my code
+			// e.getStackTrace();
+			
 			ps.close();
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
