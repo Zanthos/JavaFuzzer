@@ -27,7 +27,7 @@ public class FactoryFinder extends InstanceFinder {
 		Object instance = null;
 		
 		if (!Modifier.isStatic(candidate.getModifiers())) {
-			instance = new InstanceDispatcher(this).getInstance(candidate.getDeclaringClass());
+			instance = new InstanceDispatcher(this).tryGetInstance(candidate.getDeclaringClass());
 			if (instance == null) {
 				return null;
 			}

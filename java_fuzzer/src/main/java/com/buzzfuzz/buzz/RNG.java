@@ -7,7 +7,7 @@ import java.util.Random;
 
 import com.buzzfuzz.buzz.decisions.Config;
 import com.buzzfuzz.buzz.decisions.Constraint;
-import com.buzzfuzz.buzz.decisions.Context;
+import com.buzzfuzz.buzz.decisions.Target;
 import com.buzzfuzz.buzztools.FuzzConstraint;
 import com.buzzfuzz.buzztools.FuzzConstraints;
 
@@ -97,7 +97,9 @@ public class RNG {
 	}
 	
 	public long getLong() {
-		return rand.nextLong();
+		long test = rand.nextLong();
+		System.out.println("RETURNING LONG VALUE: " + test);
+		return test;
 	}
 	
 	public short getShort() {
@@ -129,6 +131,10 @@ public class RNG {
 		return new String(bytes, Charset.forName("UTF-8"));
 	}
 	
+	public void mutateConfig() {
+		// Should iterate through all constraints specified in config and have a small chance to mutate it
+	}
+	
 	public void parseConfig(Method method) {
 		FuzzConstraints constraintsAnnotation = method.getAnnotation(FuzzConstraints.class);
 		if (constraintsAnnotation != null) {
@@ -152,14 +158,25 @@ public class RNG {
 			this.config.addConfigFile(configFile);
 	}
 	
-	public boolean should(Context context) {
-		Constraint constraint = config.findConstraintFor(context);
-		if (constraint == null) // We maybe be good to still choose constraints randomly to try them out.
-			return true; // should have default constraint later
-		double prob = constraint.getNullProb();
-		double chance = fromRange(0.0, 1.0); // This can be done more efficiently
-		if (chance > prob)
-			return true;
-		else return false;
+	public Constraint getConstraint(Target target) {
+		return config.findConstraintFor(target);
+	}
+	
+	public boolean shouldMutate() {
+		// Eventually, this should be a ratio based on how many constraints there are
+		return should(0.2);
+	}
+	
+	public boolean should(double prob) {
+		return rand.nextDouble() < prob;
+	}
+	
+	public Constraint makeConstraint(Target target) {
+		// These should be set based on constraints / probabilities that create the best random constraint for exploratory fuzzing
+		Constraint constraint = new Constraint();
+		constraint.setNullProb(0.0);
+		constraint.setProb(rand.nextDouble());
+		config.addPair(target, constraint);
+		return constraint;
 	}
 }

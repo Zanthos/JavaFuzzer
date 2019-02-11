@@ -23,7 +23,7 @@ public class Engine {
 	public static Reflections reflections;
 	
 	public static String outputDir = "${project.build.directory}";
-	private static String buzzDir = "buzz-reports";
+	private static final String buzzDir = "buzz-reports";
 	
 	private static boolean writing = false;
 	
@@ -58,7 +58,7 @@ public class Engine {
 		for (Map.Entry<Class, Set<Method>> entry : map.entrySet()) {
 			Class key = entry.getKey();
 			for (Method method : entry.getValue()) {
-				Runner runner = new Runner(key, method);
+				Runner runner = new Runner(key, method, 500);
 				runner.start();
 				runners.add(runner);
 			}
@@ -66,6 +66,16 @@ public class Engine {
 		
 		for (Runner runner : runners) {
 			try {
+//				while (runner.isAlive()) {
+//					if (runner.getEllapsedTime() > 10000) {
+//						logTimeout();
+//						Runner battonPass = new Runner(runner);
+//						runner.interrupt();
+//						runner = battonPass;
+//						runner.start();
+//					}
+//				}
+					
 				runner.join();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
@@ -74,8 +84,18 @@ public class Engine {
 		}
 	}
 	
+	public static void logTimeout() {
+		// This is a complicated problem to solve and log.
+		// Eventually should print some kind of log that lead up to the timeout.
+		System.out.println("TIMEOUT");
+	}
+	
 	public static void log(Exception t, long seed) {
-		Throwable e = t.getCause();
+		t.printStackTrace();
+		Throwable e = t;
+		while (e.getCause() != null && e.getCause().getStackTrace().length > 0) {
+			e = e.getCause();
+		}
 		// Wait until we aren't writing
 		while(writing);
 		

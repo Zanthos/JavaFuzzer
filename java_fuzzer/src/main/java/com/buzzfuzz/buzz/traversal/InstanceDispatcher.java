@@ -13,11 +13,13 @@ import java.util.List;
 import java.util.Set;
 
 import com.buzzfuzz.buzz.RNG;
-import com.buzzfuzz.buzz.decisions.Context;
+import com.buzzfuzz.buzz.decisions.Constraint;
+import com.buzzfuzz.buzz.decisions.Target;
 
 public class InstanceDispatcher {
 	
 	private Set<ClassPkg> history;
+	private Constraint constraint;
 	private RNG rng;
 	
 	public InstanceDispatcher(RNG rng, Set<ClassPkg> chain) {
@@ -54,12 +56,33 @@ public class InstanceDispatcher {
 		System.out.println(msg);
 	}
 	
-	public Object getInstance(ClassPkg target) {
-		
+	public Object tryGetInstance(ClassPkg target) {
 		if (history.contains(target))
 			return null;
 		
+		// Maybe in load method?
 		history.add(target);
+		loadConstraint(getContext(target.getClazz()));
+		
+		if (rng.should(constraint.getNullProb())) // Should eventually work with full ClassPkg
+			return null;
+		
+		return getInstance(target);
+	}
+	
+	public Object tryGetInstance(Class<?> target) {
+		return tryGetInstance(new ClassPkg(target, null));
+	}
+	
+	public Object getInstance(ClassPkg target) {
+		
+		// Might need to move history check here
+		
+		// If this method was called directly
+		if(constraint == null) {
+			history.add(target);
+			loadConstraint(getContext(target.getClazz()));
+		}
 		
 		Object instance = checkPrimatives(target.getClazz());
 		
@@ -78,8 +101,8 @@ public class InstanceDispatcher {
 		return getInstance(new ClassPkg(target, null));
 	}
 	
-	private Context getContext(Class<?> target) {
-		Context context = new Context();
+	private Target getContext(Class<?> target) {
+		Target context = new Target();
 		String instancePath = "";
 		for (ClassPkg instance : history) {
 			instancePath += instance.getClazz().getSimpleName();
@@ -101,10 +124,19 @@ public class InstanceDispatcher {
 		return context;
 	}
 	
-	public Object checkClasses(Class<?> target) {
+	private void loadConstraint(Target target) {
+		Constraint constraint = null;
+		constraint = rng.getConstraint(target);
 		
-		if (!rng.should(getContext(target)))
-			return null;
+		// I don't want to check if constraint is null all the time when making decisions
+		// Better if is random constraint
+		if (constraint == null) {
+			constraint = rng.makeConstraint(target);
+		}
+		this.constraint = constraint;
+	}
+	
+	public Object checkClasses(Class<?> target) {
 		
 		Object inst = new FuzzConstructorFinder(this).findInstance(target);
 		if (inst == null) {
@@ -128,6 +160,7 @@ public class InstanceDispatcher {
 		if (target.equals(int.class)) {
 			return rng.getInt();
 		} else if (target.equals(long.class)) {
+			System.out.println("GETTING LONG PRIMITIVE");
 			return rng.getLong();
 		} else if (target.equals(char.class)) {
 			return rng.getChar();
@@ -152,19 +185,23 @@ public class InstanceDispatcher {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	private Object checkCommon(ClassPkg target) {
 		
 		if (target.getClazz().isArray()) {
 			Class<?> type = target.getClazz().getComponentType();
 			return randomArray(type);
-		} if (target.getClazz().equals(List.class) ) {
+		} else if (target.getClazz().equals(List.class) ) {
 			Class<?> type = (Class<?>)target.getGenerics()[0];
+			log("Creating List of type: " + type.getSimpleName());
 			Object array = randomArray(type);
 			if (array != null)
-				return Arrays.asList((Object[]) Array.newInstance(type, 0).getClass().cast(array));
+				return Arrays.asList(Array.newInstance(type, 0).getClass().cast(array));
 			else return null;
-		} else if (target.getClass().equals(BigInteger.class)) {
+		} else if (target.getClazz().equals(BigInteger.class)) {
 			return new BigInteger(rng.fromRange(2, 32), rng.getRNG());
+		} else if (target.getClazz().equals(Number.class)) {
+			return rng.getDouble();
 		}
 		return null;
 	}
@@ -219,7 +256,7 @@ public class InstanceDispatcher {
 		
 		Object[] instances = new Object[args.length];
 		for (int i = 0; i < pkgs.length; i++) {
-			instances[i] = new InstanceDispatcher(this).getInstance(pkgs[i]);
+			instances[i] = new InstanceDispatcher(this).tryGetInstance(pkgs[i]);
 			// If any of the arguments return null, this path isn't valid
 			if (instances[i] == null)
 				return null;

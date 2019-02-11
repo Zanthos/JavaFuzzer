@@ -16,21 +16,39 @@ public class Runner extends Thread {
 	private Class<?> initClass;
 	private Method initMethod;
 	private RNG rng;
+	private long startTime;
+	private int nruns;
 
 	@SuppressWarnings("rawtypes")
-	public Runner(Class cls, Method method) {
+	public Runner(Class cls, Method method, int nruns) {
 		super();
 		initClass = cls;
 		initMethod = method;
 		rng = new RNG();
+		this.nruns = nruns;
+	}
+	
+	public Runner(Runner runner) {
+		super();
+		this.initClass = runner.initClass;
+		this.initMethod = runner.initMethod;
+		this.rng = runner.rng;
+		this.nruns = runner.nruns;
+	}
+	
+	public long getEllapsedTime() {
+		return java.lang.System.currentTimeMillis() - startTime;
 	}
 	
 	public void run() {
 		
 		rng.parseConfig(initMethod);
 		
-		int count = 500;
-		while (count > 0) {
+		// Mutate so that we try some new things
+		rng.mutateConfig();
+		
+		while (nruns > 0) {
+			startTime = java.lang.System.currentTimeMillis();
 			try {
 				Object instance = new InstanceDispatcher(rng).getInstance(initClass);
 				Object result = initMethod.invoke(instance, new InstanceDispatcher(rng)
@@ -49,7 +67,7 @@ public class Runner extends Thread {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			count--;
+			nruns--;
 		}
 	}
 }

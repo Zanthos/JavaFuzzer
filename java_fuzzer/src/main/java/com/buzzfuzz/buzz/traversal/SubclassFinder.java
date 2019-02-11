@@ -14,7 +14,7 @@ public class SubclassFinder extends InstanceFinder {
 
 	@Override
 	public Object attemptPath(Object choice) {
-		return new InstanceDispatcher(this).getInstance((Class<?>)choice);
+		return new InstanceDispatcher(this).tryGetInstance((Class<?>)choice);
 	}
 
 	@Override

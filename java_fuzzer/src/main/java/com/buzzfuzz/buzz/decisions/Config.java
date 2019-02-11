@@ -1,7 +1,5 @@
 package com.buzzfuzz.buzz.decisions;
 
-import java.util.List;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -14,11 +12,7 @@ import com.buzzfuzz.buzz.decisions.Target;
 
 public class Config {
 	
-	ConfigTree config = new ConfigTree();
-	
-	public Config() {
-		
-	}
+	ConfigTree config;
 	
 	public void addConfigFile(String path) {
 		if (!path.isEmpty() && path != null) {
@@ -40,29 +34,33 @@ public class Config {
 				}
 				
 				mergeNewTree(fileConfig);
-//				mergeNewTree(fileConfig);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			System.out.println(this.config);
 		}
 	}
 	
 	private void mergeNewTree(ConfigTree tree) {
 		config = tree;
-//		mergeScopes(this.config.getRoot(), tree.getRoot());
+//		mergeTrees(config, tree.getRoot());
 	}
 	
-	private void mergeScopes(Scope initS, Scope newS) {
-		List<Scope> initChildren = initS.getChildren();
-		for (Scope child : newS.getChildren()) {
-			if (initChildren.contains(child)) {
-				mergeScopes(initChildren.get(initChildren.indexOf(child)), child);
-			} else {
-				initChildren.add(child);
-			}
+	// Merges two trees together, overriding the first tree with the second where applicable
+	private void mergeTrees(ConfigTree t1, Scope scope) {
+		if (t1 == null)
+			t1 = new ConfigTree(scope);
+			
+		// iterate through target, constraint pairs and addPair continually
+		if (scope.getTarget() != null && scope.getConstraint() != null)
+			t1.addPair(scope.getTarget(), scope.getConstraint()); // should just have this method validate nulls
+		for (Scope child : scope.getChildren()) {
+			mergeTrees(t1, child);
 		}
+	}
+	
+	public void addPair(Target target, Constraint constraint) {
+		config.addPair(target, constraint);
 	}
 	
 	private void evaluateScopes(NodeList xmlScopes, Scope configScope) {
@@ -121,50 +119,8 @@ public class Config {
 		return constraint;
 	}
 
-	public Constraint findConstraintFor(Context context) {
-		return findConstraintFor(context, config.getRoot()).x;
+	public Constraint findConstraintFor(Target target) {
+		return config.findPairFor(target, config.getRoot()).x.y.y;
 	}
-	
-	private Tuple<Constraint, Integer> findConstraintFor(Context context, Scope scope) {
-		if (validateContext(scope.getTarget(), context)) {
-			// Should also build up the constraints as we go down
-			// This is getting complicated
-			Constraint constraint = (scope.getConstraint() == null) ? null : scope.getConstraint().clone();
-			int maxDepth = 0;
-			if (scope.getChildren() != null) {
-				for (Scope child : scope.getChildren()) {
-					Tuple<Constraint, Integer> result = findConstraintFor(context, child);
-					if (result == null)
-						continue;
-					if (result.y >= maxDepth) {
-						if (constraint == null)
-							constraint = result.x;
-						else constraint.override(result.x);
-						maxDepth = result.y;
-					}
-				}
-			}
-			return new Tuple<Constraint, Integer>(constraint, maxDepth);
-		}
-		return null;
-	}
-	
-	private boolean validateContext(Target target, Context context) {
-		if (target == null) {
-			return true;
-		} else if (context.getInstancePath() != null && target.getInstancePath() != null) {
-			return context.getInstancePath().contains(target.getInstancePath()); // Eventually use regex
-		}
-		return false; // This should have a lot of things later
-	}
-	
-	public class Tuple<X, Y> { 
-		public final X x; 
-		public final Y y; 
-		public Tuple(X x, Y y) { 
-			this.x = x; 
-			this.y = y; 
-		} 
-	} 
 
 }
