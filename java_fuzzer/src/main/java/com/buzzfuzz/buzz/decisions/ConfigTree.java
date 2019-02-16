@@ -18,6 +18,11 @@ public class ConfigTree {
     		return this.root;
     }
     
+    @Override
+    public int hashCode() {
+        return root.hashCode();
+    }
+    
     public void addPair(Target target, Constraint constraint) {
 		// find deepest existing scope that fits my target
 		Tuple<Scope, Tuple<Target, Constraint>> location = findPairFor(target, root).x;
@@ -124,6 +129,23 @@ public class ConfigTree {
         
         public List<Scope> getChildren() {
         		return this.children;
+        }
+        
+        @Override
+        public int hashCode() {
+        		int hash = 1;
+        		
+        		if (this.getTarget() != null)
+        			hash += this.getTarget().hashCode();
+        		
+        		if (this.getConstraint() != null)
+        			hash += this.getConstraint().hashCode();
+        		
+	        	for (Scope child : this.children) {
+	        		hash += child.hashCode();
+	        	}
+	        	
+            return hash;
         }
         
         @Override

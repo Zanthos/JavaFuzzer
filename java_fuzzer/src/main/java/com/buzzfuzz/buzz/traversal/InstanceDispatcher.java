@@ -64,8 +64,10 @@ public class InstanceDispatcher {
 		history.add(target);
 		loadConstraint(getContext(target.getClazz()));
 		
-		if (rng.should(constraint.getNullProb())) // Should eventually work with full ClassPkg
+		if (rng.should(constraint.getNullProb())) {// Should eventually work with full ClassPkg
+			System.out.println("NULL BECAUSE OF CONFIG");
 			return null;
+		}
 		
 		return getInstance(target);
 	}
@@ -125,14 +127,12 @@ public class InstanceDispatcher {
 	}
 	
 	private void loadConstraint(Target target) {
-		Constraint constraint = null;
-		constraint = rng.getConstraint(target);
+		Constraint constraint = rng.getConstraint(target);
 		
-		// I don't want to check if constraint is null all the time when making decisions
-		// Better if is random constraint
 		if (constraint == null) {
+			System.out.println("MAKING NEW CONSTRAINT");
 			constraint = rng.makeConstraint(target);
-		}
+		} else System.out.println("USING EXISTING CONSTRAINT" + constraint.toString());
 		this.constraint = constraint;
 	}
 	
@@ -192,6 +192,8 @@ public class InstanceDispatcher {
 			Class<?> type = target.getClazz().getComponentType();
 			return randomArray(type);
 		} else if (target.getClazz().equals(List.class) ) {
+			if (target.getGenerics().length == 0)
+				return null;
 			Class<?> type = (Class<?>)target.getGenerics()[0];
 			log("Creating List of type: " + type.getSimpleName());
 			Object array = randomArray(type);

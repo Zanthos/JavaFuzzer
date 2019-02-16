@@ -58,7 +58,7 @@ public class Engine {
 		for (Map.Entry<Class, Set<Method>> entry : map.entrySet()) {
 			Class key = entry.getKey();
 			for (Method method : entry.getValue()) {
-				Runner runner = new Runner(key, method, 500);
+				Runner runner = new Runner(key, method, 100);
 				runner.start();
 				runners.add(runner);
 			}
@@ -90,7 +90,7 @@ public class Engine {
 		System.out.println("TIMEOUT");
 	}
 	
-	public static void log(Exception t, long seed) {
+	public static String log(Exception t, long seed) {
 		t.printStackTrace();
 		Throwable e = t;
 		while (e.getCause() != null && e.getCause().getStackTrace().length > 0) {
@@ -133,6 +133,8 @@ public class Engine {
 		
 		// end lock
 		writing = false;
+		
+		return example.getPath();
 		
 	}
 }

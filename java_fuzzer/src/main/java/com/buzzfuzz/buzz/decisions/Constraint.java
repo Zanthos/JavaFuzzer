@@ -33,4 +33,14 @@ public class Constraint {
 		if (constraint.prob != null)
 			this.prob = constraint.prob;
 	}
+	
+	@Override
+    public int hashCode() {
+        return this.toString().hashCode();
+    }
+	
+	@Override
+	public String toString() {
+		return nullProb + ", " + prob;
+	}
 }

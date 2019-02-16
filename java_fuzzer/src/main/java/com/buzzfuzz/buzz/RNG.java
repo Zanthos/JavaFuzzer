@@ -1,9 +1,21 @@
 package com.buzzfuzz.buzz;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.util.Random;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Document;
 
 import com.buzzfuzz.buzz.decisions.Config;
 import com.buzzfuzz.buzz.decisions.Constraint;
@@ -174,9 +186,42 @@ public class RNG {
 	public Constraint makeConstraint(Target target) {
 		// These should be set based on constraints / probabilities that create the best random constraint for exploratory fuzzing
 		Constraint constraint = new Constraint();
-		constraint.setNullProb(0.0);
+		constraint.setNullProb(rand.nextDouble());
 		constraint.setProb(rand.nextDouble());
 		config.addPair(target, constraint);
 		return constraint;
+	}
+	
+	public void printConfig(String path) {
+		File corpus = Paths.get(path, "corpus").toFile();
+		if (!corpus.exists())
+			corpus.mkdir();
+		
+		File output = Paths.get(corpus.getPath(), config.hashCode() + ".xml").toFile();
+		if (output.exists())
+			output.delete();
+		
+		Document doc = config.toXML();
+		
+		TransformerFactory transformerFactory = TransformerFactory.newInstance();
+	    Transformer transformer;
+		try {
+			transformer = transformerFactory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+			DOMSource source = new DOMSource(doc);
+			
+		     StreamResult result = new StreamResult(output);
+			
+//		    StreamResult result = new StreamResult(System.out);
+		    
+			transformer.transform(source, result);
+		} catch (TransformerConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransformerException e) {
+			e.printStackTrace();
+		}
+	    
 	}
 }

@@ -42,7 +42,8 @@ public class FactoryFinder extends InstanceFinder {
 		try {
 			outcome = candidate.invoke(instance, args);
 		} catch (Exception e) {
-			Engine.log(e, rng.getSeed());
+			String path = Engine.log(e, rng.getSeed());
+			rng.printConfig(path);
 		}
 		
 		return outcome;

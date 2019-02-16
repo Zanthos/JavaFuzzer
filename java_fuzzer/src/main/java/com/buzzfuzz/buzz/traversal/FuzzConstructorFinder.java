@@ -23,7 +23,8 @@ public class FuzzConstructorFinder extends InstanceFinder {
 		try {
 			instance = fuzzCntr.invoke(null, args);
 		} catch (Exception e) {
-			Engine.log(e, rng.getSeed());
+			String path = Engine.log(e, rng.getSeed());
+			rng.printConfig(path);
 		}
 		
 		return instance;

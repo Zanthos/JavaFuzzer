@@ -70,4 +70,9 @@ public class Target {
 	public void setConstructorOf(String constructorOf) {
 		this.constructorOf = constructorOf;
 	}
+	
+//	@Override
+//    public int hashCode() {
+//        return this.toString().hashCode();
+//    }
 }
