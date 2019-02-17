@@ -15,6 +15,12 @@ import com.buzzfuzz.buzz.decisions.Target;
 public class Config {
 	
 	ConfigTree config;
+	StringBuilder log;
+	
+	public Config() {
+		config = new ConfigTree();
+		log = new StringBuilder();
+	}
 	
 	public void addConfigFile(String path) {
 		if (!path.isEmpty() && path != null) {
@@ -43,6 +49,18 @@ public class Config {
 		}
 	}
 	
+	public void log(String msg) {
+		log.append(msg);
+	}
+	
+	public StringBuilder getLog() {
+		return log;
+	}
+	
+//	public Config clone() {
+//		
+//	}
+	
 	@Override
     public int hashCode() {
         return config.hashCode();
@@ -54,17 +72,17 @@ public class Config {
 	}
 	
 	// Merges two trees together, overriding the first tree with the second where applicable
-	private void mergeTrees(ConfigTree t1, Scope scope) {
-		if (t1 == null)
-			t1 = new ConfigTree(scope);
-			
-		// iterate through target, constraint pairs and addPair continually
-		if (scope.getTarget() != null && scope.getConstraint() != null)
-			t1.addPair(scope.getTarget(), scope.getConstraint()); // should just have this method validate nulls
-		for (Scope child : scope.getChildren()) {
-			mergeTrees(t1, child);
-		}
-	}
+//	private void mergeTrees(ConfigTree t1, Scope scope) {
+//		if (t1 == null)
+//			t1 = new ConfigTree(scope);
+//			
+//		// iterate through target, constraint pairs and addPair continually
+//		if (scope.getTarget() != null && scope.getConstraint() != null)
+//			t1.addPair(scope.getTarget(), scope.getConstraint()); // should just have this method validate nulls
+//		for (Scope child : scope.getChildren()) {
+//			mergeTrees(t1, child);
+//		}
+//	}
 	
 	public void addPair(Target target, Constraint constraint) {
 		config.addPair(target, constraint);

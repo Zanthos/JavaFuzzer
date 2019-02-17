@@ -11,6 +11,8 @@ import org.reflections.util.Utils;
 import com.buzzfuzz.buzz.Engine;
 import com.google.common.collect.Multimap;
 
+import edu.emory.mathcs.backport.java.util.Arrays;
+
 public class FactoryFinder extends InstanceFinder {
 
 
@@ -40,10 +42,10 @@ public class FactoryFinder extends InstanceFinder {
 		
 		Object outcome = null;
 		try {
+			log("Using args: " + Arrays.toString(args));
 			outcome = candidate.invoke(instance, args);
 		} catch (Exception e) {
-			String path = Engine.log(e, rng.getSeed());
-			rng.printConfig(path);
+			rng.logCrash(e);
 		}
 		
 		return outcome;

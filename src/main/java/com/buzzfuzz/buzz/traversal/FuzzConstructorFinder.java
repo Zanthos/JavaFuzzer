@@ -3,8 +3,6 @@ package com.buzzfuzz.buzz.traversal;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-import com.buzzfuzz.buzz.Engine;
-
 public class FuzzConstructorFinder extends InstanceFinder {
 
 	public FuzzConstructorFinder(InstanceDispatcher dispatcher) {
@@ -23,8 +21,7 @@ public class FuzzConstructorFinder extends InstanceFinder {
 		try {
 			instance = fuzzCntr.invoke(null, args);
 		} catch (Exception e) {
-			String path = Engine.log(e, rng.getSeed());
-			rng.printConfig(path);
+			rng.logCrash(e);
 		}
 		
 		return instance;

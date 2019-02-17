@@ -25,10 +25,10 @@ public abstract class InstanceFinder {
 	protected void log(String msg) {
 		int indent = history.size();
 		while (indent > 0) {
-			System.out.print("    ");
+			msg = "    " + msg;
 			indent--;
 		}
-		System.out.println(msg);
+		rng.log(msg + '\n');
 	}
 	
 	public Object findInstance(Class<?> target) {

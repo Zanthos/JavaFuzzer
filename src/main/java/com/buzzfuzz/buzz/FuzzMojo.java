@@ -81,9 +81,9 @@ public class FuzzMojo  extends AbstractMojo
 //		}
 		
 		Set<Method> methods = reflections.getMethodsAnnotatedWith(Fuzz.class);
-		for (Method meth : methods) {
-			System.out.println("Fuzzing method " + meth.getName());
-		}
+//		for (Method meth : methods) {
+//			System.out.println("Fuzzing method " + meth.getName());
+//		}
 		
 		Engine.outputDir = projectOutputDir;
 		

@@ -3,8 +3,10 @@
  */
 package com.buzzfuzz.buzz;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.buzzfuzz.buzz.traversal.InstanceDispatcher;
 
 /**
@@ -15,25 +17,18 @@ public class Runner extends Thread {
 
 	private Class<?> initClass;
 	private Method initMethod;
-	private RNG rng;
 	private long startTime;
-	private int nruns;
+	private int popSize;
 
-	@SuppressWarnings("rawtypes")
-	public Runner(Class cls, Method method, int nruns) {
+	public Runner(Class<?> cls, Method method, int nruns) {
 		super();
-		initClass = cls;
-		initMethod = method;
-		rng = new RNG();
-		this.nruns = nruns;
+		this.initClass = cls;
+		this.initMethod = method;
+		this.popSize = nruns;
 	}
 	
 	public Runner(Runner runner) {
-		super();
-		this.initClass = runner.initClass;
-		this.initMethod = runner.initMethod;
-		this.rng = runner.rng;
-		this.nruns = runner.nruns;
+		this(runner.initClass, runner.initMethod, runner.popSize);
 	}
 	
 	public long getEllapsedTime() {
@@ -42,33 +37,43 @@ public class Runner extends Thread {
 	
 	public void run() {
 		
-		rng.parseConfig(initMethod);
+		// Each run should create a population of purely random configs
+		// and then in a loop, (grade them all, breed them, and mutate them)
+		
+//		Config baseConfig = RNG.parseConfig(initMethod);
 		
 		// Mutate so that we try some new things
-		rng.mutateConfig();
+//		rng.mutateConfig();
 		
-		while (nruns > 0) {
-			startTime = java.lang.System.currentTimeMillis();
+		Set<String> crashes = new HashSet<String>();
+		int crashCount = 0;
+		startTime = java.lang.System.currentTimeMillis();
+		
+		int count = 0;
+		while (count < popSize) {
+			
+			RNG rng = new RNG();
+			
+			rng.setConfig(RNG.parseConfig(initMethod));
 			try {
 				Object instance = new InstanceDispatcher(rng).getInstance(initClass);
-				Object result = initMethod.invoke(instance, new InstanceDispatcher(rng)
+				initMethod.invoke(instance, new InstanceDispatcher(rng)
 						.randomArgs(initMethod.getParameterTypes(), initMethod.getGenericParameterTypes()));
-				System.out.println();
-				System.out.println("Fuzzing finished and created: " + result.toString());
-				System.out.println();
 				
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				// Eventually add this to the log as well and use for crash-free corpus
+//				System.out.println();
+//				System.out.println("Fuzzing finished and created: " + String.valueOf(result));
+//				System.out.println();
+			} catch (Exception e) {
+				rng.logCrash(e);
+			} finally {
+				crashes.addAll(rng.getCrashes());
+				crashCount += rng.getCrashCount();
 			}
-			nruns--;
+			count++;
 		}
+		
+		Engine.report(initMethod.getName(), popSize, crashCount, getEllapsedTime(), crashes);
 		
 //		rng.printConfig();
 	}
