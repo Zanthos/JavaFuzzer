@@ -1,11 +1,16 @@
 package com.buzzfuzz.buzz;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -28,6 +33,8 @@ public class RNG {
 	private Random rand;
 	private Config config;
 	private long seed;
+	private Set<String> crashes;
+	private int crashCount;
 
 	public RNG() {
 		this(System.currentTimeMillis());
@@ -36,11 +43,29 @@ public class RNG {
 	public RNG(long seed) {
 		this.seed = seed;
 		rand = new Random(seed);
-		config = new Config();
+		crashes = new HashSet<String>();
+		crashCount++;
+//		config = new Config();
+	}
+	
+	public void log(String msg) {
+		config.log(msg);
+	}
+	
+	public void setConfig(Config config) {
+		this.config = config;
 	}
 	
 	public long getSeed() {
 		return this.seed;
+	}
+	
+	public Set<String> getCrashes() {
+		return this.crashes;
+	}
+	
+	public int getCrashCount() {
+		return this.crashCount;
 	}
 	
 	public Random getRNG() {
@@ -147,27 +172,30 @@ public class RNG {
 		// Should iterate through all constraints specified in config and have a small chance to mutate it
 	}
 	
-	public void parseConfig(Method method) {
+	public static Config parseConfig(Method method) {
+		Config config = new Config();
 		FuzzConstraints constraintsAnnotation = method.getAnnotation(FuzzConstraints.class);
 		if (constraintsAnnotation != null) {
 			FuzzConstraint[] constraints = constraintsAnnotation.value();
 			
 			for( FuzzConstraint constraint : constraints ) {
-				evaluateConstraint(constraint);
+				evaluateConstraint(config, constraint);
 			}
 		} else {
 			// Maybe there is only one
 			FuzzConstraint constraintAnnotation = method.getAnnotation(FuzzConstraint.class);
 			if (constraintAnnotation != null) {
-				evaluateConstraint(constraintAnnotation);
+				evaluateConstraint(config, constraintAnnotation);
 			}
 		}
+		return config;
 	}
 	
-	private void evaluateConstraint(FuzzConstraint constraint) {
+	private static void evaluateConstraint(Config config, FuzzConstraint constraint) {
+		// Also need to add pairs given in annotations
 		String configFile = constraint.configFile();
 		if (configFile != null && !configFile.isEmpty())
-			this.config.addConfigFile(configFile);
+			config.addConfigFile(configFile);
 	}
 	
 	public Constraint getConstraint(Target target) {
@@ -192,14 +220,50 @@ public class RNG {
 		return constraint;
 	}
 	
-	public void printConfig(String path) {
+	public void logCrash(Exception e) {
+		Throwable t = e;
+		while (t.getCause() != null && t.getCause().getStackTrace().length > 0) {
+			t = t.getCause();
+		}
+		crashes.add(t.getClass().getSimpleName());
+		crashCount++;
+		String path = Engine.log(t, seed);
+		printConfig(path);
+	}
+	
+	// This should really be the Engine's job to make sure that everything is still thread-safe
+	private void printConfig(String path) {
 		File corpus = Paths.get(path, "corpus").toFile();
 		if (!corpus.exists())
 			corpus.mkdir();
 		
-		File output = Paths.get(corpus.getPath(), config.hashCode() + ".xml").toFile();
+		File output = Paths.get(corpus.getPath(), String.valueOf(config.hashCode())).toFile();
 		if (output.exists())
 			output.delete();
+		
+		output.mkdir();
+		
+		// Print the log of decisions that were made
+		File logger = Paths.get(output.getPath(), "log.txt").toFile();
+		BufferedWriter writer = null;
+		try {
+		    writer = new BufferedWriter(new FileWriter(logger));
+		    writer.append(config.getLog());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+		    if (writer != null)
+				try {
+					writer.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}
+		
+		// Print configuration that was used
+		File configuration = Paths.get(output.getPath(), "config.xml").toFile();
 		
 		Document doc = config.toXML();
 		
@@ -211,9 +275,7 @@ public class RNG {
 			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
 			DOMSource source = new DOMSource(doc);
 			
-		     StreamResult result = new StreamResult(output);
-			
-//		    StreamResult result = new StreamResult(System.out);
+		     StreamResult result = new StreamResult(configuration);
 		    
 			transformer.transform(source, result);
 		} catch (TransformerConfigurationException e) {

@@ -25,10 +25,12 @@ public class Engine {
 	public static String outputDir = "${project.build.directory}";
 	private static final String buzzDir = "buzz-reports";
 	
-	private static boolean writing = false;
-	
 	@SuppressWarnings({ "rawtypes" })
 	public static void run(Set<Method> methods, Reflections reflect) {
+		
+		System.out.println("-------------------------------------------------------");
+		System.out.println(" F U Z Z  T E S T S");
+		System.out.println("-------------------------------------------------------");
 		
 		// Make reports directory if it doesn't already exist
 		File directory = Paths.get(outputDir, buzzDir).toFile();
@@ -58,7 +60,7 @@ public class Engine {
 		for (Map.Entry<Class, Set<Method>> entry : map.entrySet()) {
 			Class key = entry.getKey();
 			for (Method method : entry.getValue()) {
-				Runner runner = new Runner(key, method, 100);
+				Runner runner = new Runner(key, method, 500);
 				runner.start();
 				runners.add(runner);
 			}
@@ -84,40 +86,39 @@ public class Engine {
 		}
 	}
 	
-	public static void logTimeout() {
+	public synchronized static void report(String mthName, int popSize, int crashes, long time, Set<String> crashNames) {
+		System.out.println("Fuzzing Method " + mthName);
+		System.out.println("Valid runs: " + popSize +
+				", Crashes: " + crashes + 
+				", Time elapsed: " + time + " ms");
+		System.out.println();
+		System.out.println("Exceptions found:");
+		for (String exception : crashNames) {
+			System.out.println("    " + exception);
+		}
+		System.out.println();
+	}
+	
+	public synchronized static void logTimeout() {
 		// This is a complicated problem to solve and log.
-		// Eventually should print some kind of log that lead up to the timeout.
+		// Eventually should print some kind of log that leads up to the timeout.
 		System.out.println("TIMEOUT");
 	}
 	
-	public static String log(Exception t, long seed) {
-		t.printStackTrace();
-		Throwable e = t;
-		while (e.getCause() != null && e.getCause().getStackTrace().length > 0) {
-			e = e.getCause();
-		}
-		// Wait until we aren't writing
-		while(writing);
-		
-		// start lock (should probably do this in a better way
-		writing = true;
+	public synchronized static String log(Throwable e, long seed) {
+//		t.printStackTrace();
 		
 		StackTraceElement recentCrash = e.getStackTrace()[0];
 		
 		File crashDir = Paths.get(
 				outputDir, 
 				buzzDir, 
-				recentCrash.getClassName().substring(recentCrash.getClassName().lastIndexOf('.')+1) + '.' + recentCrash.getMethodName() + "():" + recentCrash.getLineNumber(),
-				e.getClass().getSimpleName()).toFile();
+				e.getClass().getSimpleName(), 
+				recentCrash.getClassName().substring(recentCrash.getClassName().lastIndexOf('.')+1) + '.' + recentCrash.getMethodName() + "():" + recentCrash.getLineNumber()).toFile();
 		if (!crashDir.exists())
 			crashDir.mkdirs();
 		
-		File example = Paths.get(crashDir.getPath(), Long.toString(seed)).toFile();
-		if (example.exists())
-			example.delete();
-			
-		example.mkdir();
-		File strace = Paths.get(example.getPath(), "stacktrace.txt").toFile();
+		File strace = Paths.get(crashDir.getPath(), "stacktrace.txt").toFile();
 		PrintStream ps;
 		try {
 			ps = new PrintStream(strace);
@@ -131,10 +132,6 @@ public class Engine {
 			e1.printStackTrace();
 		}
 		
-		// end lock
-		writing = false;
-		
-		return example.getPath();
-		
+		return crashDir.getPath();
 	}
 }

@@ -3,8 +3,6 @@ package com.buzzfuzz.buzz.traversal;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 
-import com.buzzfuzz.buzz.Engine;
-
 import edu.emory.mathcs.backport.java.util.Arrays;
 
 public class ConstructorFinder extends InstanceFinder {
@@ -18,16 +16,16 @@ public class ConstructorFinder extends InstanceFinder {
 	public Object attemptPath(Object choice) {
 		Constructor<?> cntr = (Constructor<?>)choice;
 		Object[] args = new InstanceDispatcher(this).randomArgs(cntr.getParameterTypes(), cntr.getGenericParameterTypes());
-		if (args == null)
+		if (args == null) {
+			log("EYYYY: Returning null because arguments were null");
 			return null;
+		}
 		
 		Object instance = null;
 		try {
 			instance = cntr.newInstance(args);
 		} catch (Exception e) {
-			String path = Engine.log(e, rng.getSeed());
-			rng.printConfig(path);
-			// Eventually use this exception to drive config
+			rng.logCrash(e);
 		}
 		
 		return instance;

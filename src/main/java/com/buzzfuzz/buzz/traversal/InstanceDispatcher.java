@@ -50,10 +50,10 @@ public class InstanceDispatcher {
 	private void log(String msg) {
 		int indent = history.size();
 		while (indent > 0) {
-			System.out.print("    ");
+			msg = "    " + msg;
 			indent--;
 		}
-		System.out.println(msg);
+		rng.log(msg + '\n');
 	}
 	
 	public Object tryGetInstance(ClassPkg target) {
@@ -64,8 +64,8 @@ public class InstanceDispatcher {
 		history.add(target);
 		loadConstraint(getContext(target.getClazz()));
 		
-		if (rng.should(constraint.getNullProb())) {// Should eventually work with full ClassPkg
-			System.out.println("NULL BECAUSE OF CONFIG");
+		if (!target.getClazz().isPrimitive() && rng.should(constraint.getNullProb())) {// Should eventually work with full ClassPkg
+			log("Returning null instead of instance");
 			return null;
 		}
 		
@@ -130,9 +130,10 @@ public class InstanceDispatcher {
 		Constraint constraint = rng.getConstraint(target);
 		
 		if (constraint == null) {
-			System.out.println("MAKING NEW CONSTRAINT");
+//			System.out.println("MAKING NEW CONSTRAINT");
 			constraint = rng.makeConstraint(target);
-		} else System.out.println("USING EXISTING CONSTRAINT" + constraint.toString());
+		} 
+//		else System.out.println("USING EXISTING CONSTRAINT" + constraint.toString());
 		this.constraint = constraint;
 	}
 	
@@ -259,9 +260,9 @@ public class InstanceDispatcher {
 		Object[] instances = new Object[args.length];
 		for (int i = 0; i < pkgs.length; i++) {
 			instances[i] = new InstanceDispatcher(this).tryGetInstance(pkgs[i]);
-			// If any of the arguments return null, this path isn't valid
-			if (instances[i] == null)
-				return null;
+			// If any of the arguments return BadPath, return BadPath
+//			if (instances[i].getClass().)
+//				return null;
 		}
 		return instances;
 	}
