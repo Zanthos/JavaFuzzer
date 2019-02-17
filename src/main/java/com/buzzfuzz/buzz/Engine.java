@@ -114,11 +114,11 @@ public class Engine {
 				outputDir, 
 				buzzDir, 
 				e.getClass().getSimpleName(), 
-				recentCrash.getClassName().substring(recentCrash.getClassName().lastIndexOf('.')+1) + '.' + recentCrash.getMethodName() + "():" + recentCrash.getLineNumber()).toFile();
+				recentCrash.getClassName().substring(recentCrash.getClassName().lastIndexOf('.')+1) + '_' + recentCrash.getMethodName() + '_' + recentCrash.getLineNumber()).toFile();
 		if (!crashDir.exists())
 			crashDir.mkdirs();
 		
-		File strace = Paths.get(crashDir.getPath(), "stacktrace.txt").toFile();
+		File strace = Paths.get(crashDir.toURI().getPath(), "stacktrace.txt").toFile();
 		PrintStream ps;
 		try {
 			ps = new PrintStream(strace);
@@ -132,6 +132,6 @@ public class Engine {
 			e1.printStackTrace();
 		}
 		
-		return crashDir.getPath();
+		return crashDir.toURI().getPath();
 	}
 }
