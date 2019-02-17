@@ -93,8 +93,6 @@ public class InstanceDispatcher {
 		if (instance == null) {
 			// Eventually will need full ClassPkg
 			instance = checkClasses(target.getClazz());
-		} else {
-			log(instance.toString());
 		}
 		return instance;
 	}
@@ -194,16 +192,7 @@ public class InstanceDispatcher {
 		} else if (target.getClazz().equals(List.class) ) {
 			Class<?> type = (Class<?>)target.getGenerics()[0];
 			log("Creating List of type: " + type.getSimpleName());
-//			Object[] array = randomArray(type);
-			for (Object test : Arrays.asList(randomArray(type))) {
-				log("LIST MEMBER: " + test.toString());
-			}
 			return Arrays.asList(randomArray(type));
-//			Object array = randomArray(type);
-//			if (array != null) {
-//				return Arrays.asList(Array.newInstance(type, 0).getClass().cast(array));
-//			}
-//			else return null;
 		} else if (target.getClazz().equals(BigInteger.class)) {
 			return new BigInteger(rng.fromRange(2, 32), rng.getRNG());
 		} else if (target.getClazz().equals(Number.class)) {
@@ -249,7 +238,6 @@ public class InstanceDispatcher {
 					Type gtype = pt.getActualTypeArguments()[j];
 					if (gtype instanceof WildcardType) {
 						// Generic is in "? extends Class" format. We want its upperbound
-						log(gtype.getTypeName() + " is a WildcardType");
 						WildcardType wc = (WildcardType)gtype;
 						generics[j] = wc.getUpperBounds()[0];
 					} else {
@@ -260,10 +248,6 @@ public class InstanceDispatcher {
 				pkgs[i] = new ClassPkg((Class<?>)pt.getRawType(), generics);
 			}
 		}
-		
-//		for (ClassPkg pkg : pkgs) {
-//			System.out.println("Made ClassPkg: " + pkg.toString());
-//		}
 		
 		return pkgs;
 	}
