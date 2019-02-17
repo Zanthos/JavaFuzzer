@@ -24,7 +24,7 @@ public class FactoryFinder extends InstanceFinder {
 	@Override
 	public Object attemptPath(Object choice) {
 		Method candidate = (Method)choice;
-		log("Attempting factory method " + candidate.getName() + " from " + candidate.getDeclaringClass().getTypeName());
+		log("Attempting factory method " + candidate.getName() + " from " + candidate.getDeclaringClass().getSimpleName());
 		
 		Object instance = null;
 		
@@ -35,7 +35,7 @@ public class FactoryFinder extends InstanceFinder {
 			}
 		}
 		
-		Object[] args = new InstanceDispatcher(this).randomArgs(candidate.getParameterTypes(), candidate.getGenericParameterTypes());
+		Object[] args = new InstanceDispatcher(this).randomArgs(candidate.getGenericParameterTypes());
 		if (args == null) {
 			return null;
 		}

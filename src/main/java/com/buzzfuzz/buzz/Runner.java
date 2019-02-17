@@ -58,7 +58,7 @@ public class Runner extends Thread {
 			try {
 				Object instance = new InstanceDispatcher(rng).getInstance(initClass);
 				initMethod.invoke(instance, new InstanceDispatcher(rng)
-						.randomArgs(initMethod.getParameterTypes(), initMethod.getGenericParameterTypes()));
+						.randomArgs(initMethod.getGenericParameterTypes()));
 				
 				// Eventually add this to the log as well and use for crash-free corpus
 //				System.out.println();

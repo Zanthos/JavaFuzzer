@@ -118,7 +118,6 @@ public class Config {
 		for (int i=0; i < tAtts.getLength(); i++) {
 			Node child = tAtts.item(i);
 			if (child.getNodeName().equals("instancePath")) {
-				System.out.println("Target value: " + child.getTextContent());
 				target.setInstancePath(child.getTextContent());
 			}
 			// More later
@@ -134,7 +133,6 @@ public class Config {
 		for (int i=0; i < cAtts.getLength(); i++) {
 			Node child = cAtts.item(i);
 			if (child.getNodeName().equals("nullProb")) {
-				System.out.println("Constraint value: " + child.getTextContent());
 				double value = Double.parseDouble(child.getTextContent());
 				// might want to verify that it is within 0 and 1.0
 				constraint.setNullProb(value);

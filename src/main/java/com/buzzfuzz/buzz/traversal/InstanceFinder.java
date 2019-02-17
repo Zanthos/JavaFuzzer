@@ -33,7 +33,7 @@ public abstract class InstanceFinder {
 	
 	public Object findInstance(Class<?> target) {
 		
-		log("Finding " + logName + " for type " + target.getSimpleName());
+//		log("Finding " + logName + " for type " + target.getSimpleName());
 		
 		// get group of options
 		options = getOptions(target);
@@ -41,7 +41,7 @@ public abstract class InstanceFinder {
 		// loop through options
 		while (true) {
 			if (options.size() == 0) {
-				log("Couldn't find " + logName + " for type " + target.getSimpleName());
+//				log("Couldn't find " + logName + " for type " + target.getSimpleName());
 				return null;
 			}
 			

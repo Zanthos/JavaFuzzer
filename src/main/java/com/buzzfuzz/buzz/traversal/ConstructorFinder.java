@@ -15,9 +15,9 @@ public class ConstructorFinder extends InstanceFinder {
 	@Override
 	public Object attemptPath(Object choice) {
 		Constructor<?> cntr = (Constructor<?>)choice;
-		Object[] args = new InstanceDispatcher(this).randomArgs(cntr.getParameterTypes(), cntr.getGenericParameterTypes());
+		Object[] args = new InstanceDispatcher(this).randomArgs(cntr.getGenericParameterTypes());
 		if (args == null) {
-			log("EYYYY: Returning null because arguments were null");
+			log("Returning null because arguments were null");
 			return null;
 		}
 		
