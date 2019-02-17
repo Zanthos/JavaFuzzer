@@ -1,8 +1,6 @@
 package com.buzzfuzz.buzz.traversal;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
@@ -111,7 +109,7 @@ public class InstanceDispatcher {
 			if (instance.getGenerics() != null) {
 				instancePath += '<';
 				for (Type generic : instance.getGenerics()) {
-					instancePath += generic.getTypeName() + ',';
+					instancePath += generic.getTypeName().substring(generic.getTypeName().lastIndexOf('.')+1) + ',';
 				}
 				instancePath = instancePath.substring(0, instancePath.length()-1);
 				instancePath += '>';
@@ -121,7 +119,7 @@ public class InstanceDispatcher {
 		instancePath = instancePath.substring(0, instancePath.length()-1);
 		context.setInstancePath(instancePath);
 		
-		log(instancePath);
+		log("current path: " + instancePath);
 		
 		return context;
 	}
@@ -193,13 +191,11 @@ public class InstanceDispatcher {
 			Class<?> type = target.getClazz().getComponentType();
 			return randomArray(type);
 		} else if (target.getClazz().equals(List.class) ) {
-			if (target.getGenerics().length == 0)
-				return null;
 			Class<?> type = (Class<?>)target.getGenerics()[0];
 			log("Creating List of type: " + type.getSimpleName());
 			Object array = randomArray(type);
 			if (array != null)
-				return Arrays.asList(Array.newInstance(type, 0).getClass().cast(array));
+				return target.getClazz().cast(Arrays.asList(Array.newInstance(type, 0).getClass().cast(array)));
 			else return null;
 		} else if (target.getClazz().equals(BigInteger.class)) {
 			return new BigInteger(rng.fromRange(2, 32), rng.getRNG());
@@ -226,38 +222,48 @@ public class InstanceDispatcher {
 		return randomArray(new ClassPkg(type, null));
 	}
 	
-	public ClassPkg[] packageClasses(Class<?>[] args, Type[] genArgs) {
-		ClassPkg[] pkgs = new ClassPkg[args.length];
-		int genIndex = 0;
-		for (int i=0; i < args.length; i++) {
-			int paramCount = args[i].getTypeParameters().length;
-			Type[] generics = null;
-			if (paramCount != 0) {
-				generics = Arrays.copyOfRange(genArgs, genIndex, paramCount);
-			
-				// Sort out wild cards to a single type.
-				for (int j=0; j < generics.length; j++) {
-					if (generics[j] instanceof ParameterizedType) {
-						ParameterizedType pt = (ParameterizedType)generics[j];
-						for (Type type : pt.getActualTypeArguments()) {
-							WildcardType wc = (WildcardType)type;
-							generics[j] = wc.getUpperBounds()[0];
-						}
+	public ClassPkg[] packageClasses(Type[] genArgs) {
+		// We are creating one classPkg per argument
+		ClassPkg[] pkgs = new ClassPkg[genArgs.length];
+		
+		// Proposing new way to do generics based on what I know now
+		for (int i=0; i < genArgs.length; i++) {
+			Type type = genArgs[i];
+			if (type instanceof Class) {
+				// This doesn't have generics.
+				pkgs[i] = new ClassPkg((Class<?>)type, null);
+			} else {
+				ParameterizedType pt = (ParameterizedType)type;
+				// Eventually will have to store ClassPkgs here to account for List<List<Integer>>
+				Type[] generics = new Type[pt.getActualTypeArguments().length];
+				for (int j=0; j < pt.getActualTypeArguments().length; j++) {
+					Type gtype = pt.getActualTypeArguments()[j];
+					if (gtype instanceof WildcardType) {
+						// Generic is in "? extends Class" format. We want its upperbound
+						log(gtype.getTypeName() + " is a WildcardType");
+						WildcardType wc = (WildcardType)gtype;
+						generics[j] = wc.getUpperBounds()[0];
+					} else {
+						// Generic is a normal class at this point (probably)
+						generics[j] = gtype;
 					}
 				}
+				pkgs[i] = new ClassPkg((Class<?>)pt.getRawType(), generics);
 			}
-			
-			pkgs[i] = new ClassPkg(args[i], generics);
-			genIndex += paramCount;
 		}
+		
+//		for (ClassPkg pkg : pkgs) {
+//			System.out.println("Made ClassPkg: " + pkg.toString());
+//		}
+		
 		return pkgs;
 	}
 	
-	public Object[] randomArgs(Class<?>[] args, Type[] genArgs) {
+	public Object[] randomArgs(Type[] genArgs) {
 		
-		ClassPkg[] pkgs = packageClasses(args,  genArgs);
+		ClassPkg[] pkgs = packageClasses(genArgs);
 		
-		Object[] instances = new Object[args.length];
+		Object[] instances = new Object[genArgs.length];
 		for (int i = 0; i < pkgs.length; i++) {
 			instances[i] = new InstanceDispatcher(this).tryGetInstance(pkgs[i]);
 			// If any of the arguments return BadPath, return BadPath
@@ -265,14 +271,6 @@ public class InstanceDispatcher {
 //				return null;
 		}
 		return instances;
-	}
-	
-	public Object[] randomArgs(Method method) {
-		return randomArgs(method.getParameterTypes(), method.getGenericParameterTypes());
-	}
-	
-	public Object[] randomArgs(Constructor<?> method) {
-		return randomArgs(method.getParameterTypes(), method.getGenericParameterTypes());
 	}
 
 }

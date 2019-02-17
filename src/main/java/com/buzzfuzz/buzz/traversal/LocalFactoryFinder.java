@@ -16,7 +16,7 @@ public class LocalFactoryFinder extends FactoryFinder {
 		ArrayList<Method> candidates = new ArrayList<Method>();
 		for ( Method mth : target.getMethods()) {
 			if (mth.getReturnType().equals(target)) {
-				log("Found method " + mth.getName() + " that returns a " + target.getTypeName());
+				log("Found method " + mth.getName() + " that returns a " + target.getSimpleName());
 				candidates.add(mth);
 			}
 		}

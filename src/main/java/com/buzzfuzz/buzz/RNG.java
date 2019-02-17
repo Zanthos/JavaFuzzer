@@ -134,9 +134,7 @@ public class RNG {
 	}
 	
 	public long getLong() {
-		long test = rand.nextLong();
-		System.out.println("RETURNING LONG VALUE: " + test);
-		return test;
+		return rand.nextLong();
 	}
 	
 	public short getShort() {

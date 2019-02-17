@@ -1,14 +1,12 @@
 package com.buzzfuzz.buzz;
 
-import java.io.File;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.List;
+import java.nio.file.Paths;
 import java.util.Set;
 
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -42,26 +40,48 @@ public class FuzzMojo  extends AbstractMojo
 	@Parameter(defaultValue = "${project.build.directory}")
     private String projectOutputDir;
 	
-	@SuppressWarnings("unchecked")
+	@Parameter(defaultValue = "${project.build.testOutputDirectory}")
+	private String projectTestClassDir;
+	
+	@Parameter(defaultValue = "${project.build.outputDirectory}")
+	private String projectClassDir;
+	
 	public void execute() throws MojoExecutionException
     {
 		// Create a list of all relevant urls for loading .class files
-		List<String> srcRoots = null;
+//		List<String> srcRoots = null;
+//		try {
+//			srcRoots = mavenProject.getCompileClasspathElements();
+//		} catch (DependencyResolutionRequiredException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
+//		URL[] urls = new URL[srcRoots.size() + 1];
+		URL[] urls = null;
 		try {
-			srcRoots = mavenProject.getCompileClasspathElements();
-		} catch (DependencyResolutionRequiredException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			urls = new URL[] {
+				Paths.get(projectTestClassDir).toFile().toURI().toURL(),
+				Paths.get(projectClassDir).toFile().toURI().toURL()
+			};
+		} catch (MalformedURLException e2){
+			e2.printStackTrace();
 		}
-		URL[] urls = new URL[srcRoots.size()];
-		for (int i=0; i < srcRoots.size(); i++) {
-			try {
-				urls[i] = (new File(srcRoots.get(i))).toURI().toURL();
-			} catch (MalformedURLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		
+//		try {
+//			urls[urls.length-1] = Paths.get(projectTestClassDir).toFile().toURI().toURL();
+//		} catch (MalformedURLException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
+//		
+//		for (int i=0; i < srcRoots.size(); i++) {
+//			try {
+//				urls[i] = (new File(srcRoots.get(i))).toURI().toURL();
+//			} catch (MalformedURLException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
 		URLClassLoader child = new URLClassLoader(
 				urls, 
 				this.getClass().getClassLoader());
