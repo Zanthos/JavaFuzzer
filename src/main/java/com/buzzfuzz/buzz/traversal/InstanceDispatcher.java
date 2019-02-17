@@ -93,6 +93,8 @@ public class InstanceDispatcher {
 		if (instance == null) {
 			// Eventually will need full ClassPkg
 			instance = checkClasses(target.getClazz());
+		} else {
+			log(instance.toString());
 		}
 		return instance;
 	}
@@ -106,7 +108,7 @@ public class InstanceDispatcher {
 		String instancePath = "";
 		for (ClassPkg instance : history) {
 			instancePath += instance.getClazz().getSimpleName();
-			if (instance.getGenerics() != null) {
+			if (instance.getGenerics() != null && instance.getGenerics().length != 0) {
 				instancePath += '<';
 				for (Type generic : instance.getGenerics()) {
 					instancePath += generic.getTypeName().substring(generic.getTypeName().lastIndexOf('.')+1) + ',';
@@ -193,10 +195,16 @@ public class InstanceDispatcher {
 		} else if (target.getClazz().equals(List.class) ) {
 			Class<?> type = (Class<?>)target.getGenerics()[0];
 			log("Creating List of type: " + type.getSimpleName());
-			Object array = randomArray(type);
-			if (array != null)
-				return target.getClazz().cast(Arrays.asList(Array.newInstance(type, 0).getClass().cast(array)));
-			else return null;
+//			Object[] array = randomArray(type);
+			for (Object test : Arrays.asList(randomArray(type))) {
+				log("LIST MEMBER: " + test.toString());
+			}
+			return Arrays.asList(randomArray(type));
+//			Object array = randomArray(type);
+//			if (array != null) {
+//				return Arrays.asList(Array.newInstance(type, 0).getClass().cast(array));
+//			}
+//			else return null;
 		} else if (target.getClazz().equals(BigInteger.class)) {
 			return new BigInteger(rng.fromRange(2, 32), rng.getRNG());
 		} else if (target.getClazz().equals(Number.class)) {
@@ -205,20 +213,22 @@ public class InstanceDispatcher {
 		return null;
 	}
 	
-	private Object randomArray(ClassPkg type) {
+	private Object[] randomArray(ClassPkg type) {
 		int length = rng.fromRange(0, 10);
-		Object array = Array.newInstance(type.getClazz(), length);
+		Object[] array = (Object[])Array.newInstance(type.getClazz(), length);
 		for (int i = 0; i < length; i++) {
 			Object instance = new InstanceDispatcher(this).getInstance(type);
 			if (instance == null) {
 				return null;
 			}
-			Array.set(array, i, instance);
+			array[i] = instance;
+//			Array.set(array, i, instance);
 		}
-		return Array.newInstance(type.getClazz(), 0).getClass().cast(array);
+		return array;
+//		return Array.newInstance(type.getClazz(), 0).getClass().cast(array);
 	}
 	
-	private Object randomArray(Class<?> type) {
+	private Object[] randomArray(Class<?> type) {
 		return randomArray(new ClassPkg(type, null));
 	}
 	
