@@ -186,7 +186,6 @@ public class InstanceDispatcher {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	private Object checkCommon(ClassPkg target) {
 		
 		if (target.getClazz().isArray()) {
