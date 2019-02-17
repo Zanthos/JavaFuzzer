@@ -237,14 +237,14 @@ public class RNG {
 		if (!corpus.exists())
 			corpus.mkdir();
 		
-		File output = Paths.get(corpus.getPath(), String.valueOf(config.hashCode())).toFile();
+		File output = Paths.get(corpus.toURI().getPath(), String.valueOf(config.hashCode())).toFile();
 		if (output.exists())
 			output.delete();
 		
 		output.mkdir();
 		
 		// Print the log of decisions that were made
-		File logger = Paths.get(output.getPath(), "log.txt").toFile();
+		File logger = Paths.get(output.toURI().getPath(), "log.txt").toFile();
 		BufferedWriter writer = null;
 		try {
 		    writer = new BufferedWriter(new FileWriter(logger));
