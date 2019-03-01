@@ -3,7 +3,9 @@ package com.buzzfuzz.buzz.traversal;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.reflections.util.Utils;
@@ -43,6 +45,7 @@ public class FactoryFinder extends InstanceFinder {
 		Object outcome = null;
 		try {
 			log("Using args: " + Arrays.toString(args));
+			candidate.setAccessible(true); // For some reason this is needed for static methods?
 			outcome = candidate.invoke(instance, args);
 		} catch (Exception e) {
 			rng.logCrash(e);
@@ -54,6 +57,10 @@ public class FactoryFinder extends InstanceFinder {
 
 	@Override
 	public ArrayList<?> getOptions(Class<?> target) {
+		// TODO: A hack until I figure out how javax ELResolver works
+		if (target.equals(List.class) || target.equals(Collection.class)) {
+			return new ArrayList<Method>();
+		}
 		Multimap<String, String> store = Engine.reflections.getStore().get("CarefulMethodParameterScanner");
 		
 		Set<String> result = new HashSet<String>();
@@ -61,16 +68,27 @@ public class FactoryFinder extends InstanceFinder {
             result.addAll(store.get(key));
         }
         
+//        System.out.println("About to find factories for " + target.getSimpleName());
+        
         ArrayList<Method> candidates = new ArrayList<Method>();
-        candidates.addAll(Utils.getMethodsFromDescriptors( result, Engine.reflections.getConfiguration().getClassLoaders()));
-		
-        return candidates;
+        try {
+        		Set<Method> results = Utils.getMethodsFromDescriptors( result, Engine.reflections.getConfiguration().getClassLoaders());
+        		candidates.addAll(results);
+        		return candidates;
+        } catch (NoClassDefFoundError e) {
+        		return new ArrayList<Method>();
+        }
 	}
 
 	@Override
 	public boolean validateChoice(Object choice, Class<?> target) {
+		// shouldn't be valid if method is private
+		Method methodChoice = (Method)choice;
+		if (Modifier.isPrivate(methodChoice.getModifiers()))
+			return false;
+		
 		// Factory methods could be within the current class, which would be in the history
-		Class<?> declaringClass = ((Method)choice).getDeclaringClass();
+		Class<?> declaringClass = methodChoice.getDeclaringClass();
 		return isClassinHistory(declaringClass) || declaringClass.equals(target);
 	}
 

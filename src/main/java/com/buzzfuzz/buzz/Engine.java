@@ -107,14 +107,19 @@ public class Engine {
 	
 	public synchronized static String log(Throwable e, long seed) {
 //		t.printStackTrace();
-		
-		StackTraceElement recentCrash = e.getStackTrace()[0];
+		String crashName;
+		if (e.getStackTrace().length != 0) {
+			StackTraceElement recentCrash = e.getStackTrace()[0];
+			crashName = recentCrash.getClassName().substring(recentCrash.getClassName().lastIndexOf('.')+1) + '_' + recentCrash.getMethodName() + '_' + recentCrash.getLineNumber();
+		} else {
+			crashName = "No_Stacktrace";
+		}
 		
 		File crashDir = Paths.get(
 				outputDir, 
 				buzzDir, 
 				e.getClass().getSimpleName(), 
-				recentCrash.getClassName().substring(recentCrash.getClassName().lastIndexOf('.')+1) + '_' + recentCrash.getMethodName() + '_' + recentCrash.getLineNumber()).toFile();
+				crashName).toFile();
 		if (!crashDir.exists())
 			crashDir.mkdirs();
 		

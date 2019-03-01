@@ -62,7 +62,7 @@ public class InstanceDispatcher {
 		history.add(target);
 		loadConstraint(getContext(target.getClazz()));
 		
-		if (!target.getClazz().isPrimitive() && rng.should(constraint.getNullProb())) {// Should eventually work with full ClassPkg
+		if (!target.getClazz().isPrimitive() && rng.should(constraint.getNullProb())) {
 			log("Returning null instead of instance");
 			return null;
 		}
@@ -190,9 +190,21 @@ public class InstanceDispatcher {
 			Class<?> type = target.getClazz().getComponentType();
 			return randomArray(type);
 		} else if (target.getClazz().equals(List.class) ) {
+//			log(String.valueOf(target.getGenerics() == null));
 			Class<?> type = (Class<?>)target.getGenerics()[0];
-			log("Creating List of type: " + type.getSimpleName());
-			return Arrays.asList(randomArray(type));
+			
+			// Unfortunately this needs to be separate from the randArray method because 
+			// there can be arrays of primitives but not Lists of primitives
+			int length = rng.fromRange(0, 10);
+			Object[] array = (Object[])Array.newInstance(type, length);
+			for (int i = 0; i < length; i++) {
+				Object instance = new InstanceDispatcher(this).getInstance(type);
+				if (instance == null) {
+					return null;
+				}
+				array[i] = instance;
+			}
+			return Arrays.asList(array);
 		} else if (target.getClazz().equals(BigInteger.class)) {
 			return new BigInteger(rng.fromRange(2, 32), rng.getRNG());
 		} else if (target.getClazz().equals(Number.class)) {
@@ -201,26 +213,28 @@ public class InstanceDispatcher {
 		return null;
 	}
 	
-	private Object[] randomArray(ClassPkg type) {
+	private Object randomArray(ClassPkg type) {
 		int length = rng.fromRange(0, 10);
-		Object[] array = (Object[])Array.newInstance(type.getClazz(), length);
+		Object array = Array.newInstance(type.getClazz(), length);
 		for (int i = 0; i < length; i++) {
 			Object instance = new InstanceDispatcher(this).getInstance(type);
 			if (instance == null) {
 				return null;
 			}
-			array[i] = instance;
-//			Array.set(array, i, instance);
+			Array.set(array, i, instance);
 		}
 		return array;
 //		return Array.newInstance(type.getClazz(), 0).getClass().cast(array);
 	}
 	
-	private Object[] randomArray(Class<?> type) {
+	private Object randomArray(Class<?> type) {
 		return randomArray(new ClassPkg(type, null));
 	}
 	
 	public ClassPkg[] packageClasses(Type[] genArgs) {
+		// TODO: Sometimes target or generics is null. Maybe this is because of cases like 'E'
+		
+		
 		// We are creating one classPkg per argument
 		ClassPkg[] pkgs = new ClassPkg[genArgs.length];
 		
@@ -230,7 +244,7 @@ public class InstanceDispatcher {
 			if (type instanceof Class) {
 				// This doesn't have generics.
 				pkgs[i] = new ClassPkg((Class<?>)type, null);
-			} else {
+			} else if (type instanceof ParameterizedType){
 				ParameterizedType pt = (ParameterizedType)type;
 				// Eventually will have to store ClassPkgs here to account for List<List<Integer>>
 				Type[] generics = new Type[pt.getActualTypeArguments().length];
@@ -239,6 +253,8 @@ public class InstanceDispatcher {
 					if (gtype instanceof WildcardType) {
 						// Generic is in "? extends Class" format. We want its upperbound
 						WildcardType wc = (WildcardType)gtype;
+						if (wc.getUpperBounds()[0] == null)
+							log("New kind of wildcard");
 						generics[j] = wc.getUpperBounds()[0];
 					} else {
 						// Generic is a normal class at this point (probably)
@@ -246,6 +262,8 @@ public class InstanceDispatcher {
 					}
 				}
 				pkgs[i] = new ClassPkg((Class<?>)pt.getRawType(), generics);
+			} else {
+				// TODO: This is a generic type E. Will need to feed in a random object
 			}
 		}
 		
