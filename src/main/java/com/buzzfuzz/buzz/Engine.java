@@ -1,8 +1,11 @@
 package com.buzzfuzz.buzz;
 
 import java.util.List;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.nio.file.Paths;
@@ -12,22 +15,26 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.reflections.Reflections;
+import com.buzzfuzz.rog.decisions.Config;
+import com.buzzfuzz.rog.utility.ConfigUtil;
 
 /**
  * Hello world!
  *
  */
 public class Engine {
-	
-	public static Reflections reflections;
+
+	public static FROG rog;
 	
 	public static String outputDir = "${project.build.directory}";
 	private static final String buzzDir = "buzz-reports";
 	
 	@SuppressWarnings({ "rawtypes" })
-	public static void run(Set<Method> methods, Reflections reflect) {
-		
+	public static void fuzz(Set<Method> methods) {
+
+        if (rog == null)
+            return;
+
 		System.out.println("-------------------------------------------------------");
 		System.out.println(" F U Z Z  T E S T S");
 		System.out.println("-------------------------------------------------------");
@@ -38,8 +45,6 @@ public class Engine {
 	        directory.mkdir();
 	    }
 
-		reflections = reflect;
-		
 		Map<Class, Set<Method>> map = new HashMap<Class, Set<Method>>();
 
 		// TODO: now that the runner fuzzes by method, don't need to sort by Class
@@ -77,7 +82,7 @@ public class Engine {
 //						runner.start();
 //					}
 //				}
-					
+
 				runner.join();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
@@ -104,12 +109,19 @@ public class Engine {
 		// Eventually should print some kind of log that leads up to the timeout.
 		System.out.println("TIMEOUT");
 	}
-	
-	public synchronized static String log(Throwable e, long seed) {
+
+	public synchronized static void log(Throwable e, Config config) {
+        // We want to root of the problem or else we'll always see an invokation exception
+
+		Throwable t = e;
+		while (t.getCause() != null && t.getCause().getStackTrace().length > 0) {
+			t = t.getCause();
+        }
+
 //		t.printStackTrace();
 		String crashName;
-		if (e.getStackTrace().length != 0) {
-			StackTraceElement recentCrash = e.getStackTrace()[0];
+		if (t.getStackTrace().length != 0) {
+			StackTraceElement recentCrash = t.getStackTrace()[0];
 			crashName = recentCrash.getClassName().substring(recentCrash.getClassName().lastIndexOf('.')+1) + '_' + recentCrash.getMethodName() + '_' + recentCrash.getLineNumber();
 		} else {
 			crashName = "No_Stacktrace";
@@ -118,7 +130,7 @@ public class Engine {
 		File crashDir = Paths.get(
 				outputDir, 
 				buzzDir, 
-				e.getClass().getSimpleName(), 
+				t.getClass().getSimpleName(),
 				crashName).toFile();
 		if (!crashDir.exists())
 			crashDir.mkdirs();
@@ -127,7 +139,7 @@ public class Engine {
 		PrintStream ps;
 		try {
 			ps = new PrintStream(strace);
-			e.printStackTrace(ps);
+			t.printStackTrace(ps);
 			
 			// In the future, can strip off parts of stacktrace that go into my code
 			// e.getStackTrace();
@@ -136,7 +148,8 @@ public class Engine {
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		}
-		
-		return crashDir.toURI().getPath();
-	}
+
+		// Now we need to print the log and config
+        ConfigUtil.log(crashDir.toURI().getPath(), config);
+    }
 }

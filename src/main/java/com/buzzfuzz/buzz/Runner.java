@@ -7,7 +7,10 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.buzzfuzz.buzz.traversal.InstanceDispatcher;
+import com.buzzfuzz.buzztools.FuzzConstraint;
+import com.buzzfuzz.buzztools.FuzzConstraints;
+import com.buzzfuzz.rog.decisions.Config;
+import com.buzzfuzz.rog.utility.ConfigUtil;
 
 /**
  * @author Johnny Rockett
@@ -37,7 +40,7 @@ public class Runner extends Thread {
 	
 	public void run() {
 		
-		// Each run should create a population of purely random configs
+		// To start with, we don't give a config so that one is generated as it goes
 		// and then in a loop, (grade them all, breed them, and mutate them)
 		
 //		Config baseConfig = RNG.parseConfig(initMethod);
@@ -51,24 +54,19 @@ public class Runner extends Thread {
 		
 		int count = 0;
 		while (count < popSize) {
-			
-			RNG rng = new RNG();
-			
-			rng.setConfig(RNG.parseConfig(initMethod));
+
+			Config config = parseConfig(initMethod);
 			try {
-				Object instance = new InstanceDispatcher(rng).getInstance(initClass);
-				initMethod.invoke(instance, new InstanceDispatcher(rng)
-						.randomArgs(initMethod.getGenericParameterTypes()));
-				
+                Object instance = Engine.rog.getInstance(initClass, config);
+                Object[] args = Engine.rog.getArgInstancesFor(initMethod, config);
+				initMethod.invoke(instance, args);
+
 				// Eventually add this to the log as well and use for crash-free corpus
 //				System.out.println();
 //				System.out.println("Fuzzing finished and created: " + String.valueOf(result));
 //				System.out.println();
 			} catch (Exception e) {
-				rng.logCrash(e);
-			} finally {
-				crashes.addAll(rng.getCrashes());
-				crashCount += rng.getCrashCount();
+                Engine.log(e, config);
 			}
 			count++;
 		}
@@ -76,5 +74,31 @@ public class Runner extends Thread {
 		Engine.report(initMethod.getName(), popSize, crashCount, getEllapsedTime(), crashes);
 		
 //		rng.printConfig();
+    }
+
+    public static Config parseConfig(Method method) {
+		Config config = new Config();
+		FuzzConstraints constraintsAnnotation = method.getAnnotation(FuzzConstraints.class);
+		if (constraintsAnnotation != null) {
+			FuzzConstraint[] constraints = constraintsAnnotation.value();
+			
+			for( FuzzConstraint constraint : constraints ) {
+				evaluateConstraint(config, constraint);
+			}
+		} else {
+			// Maybe there is only one
+			FuzzConstraint constraintAnnotation = method.getAnnotation(FuzzConstraint.class);
+			if (constraintAnnotation != null) {
+				evaluateConstraint(config, constraintAnnotation);
+			}
+		}
+		return config;
 	}
+	
+	private static void evaluateConstraint(Config config, FuzzConstraint constraint) {
+		// Also need to add pairs given in annotations
+		String configFile = constraint.configFile();
+		if (configFile != null && !configFile.isEmpty())
+			ConfigUtil.mergeNewTree(config.getTree(), ConfigUtil.createConfigFromFile(configFile));
+    }
 }

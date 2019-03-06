@@ -54,5 +54,10 @@
       <artifactId>buzz-tools</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
+    <dependency>
+        <groupId>com.buzzfuzz.rog</groupId>
+        <artifactId>rog</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 </project>
