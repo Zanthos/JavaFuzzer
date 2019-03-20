@@ -16,22 +16,26 @@ import com.buzzfuzz.rog.utility.ConfigUtil;
  * @author Johnny Rockett
  *
  */
-public class Runner extends Thread {
+public class Runner implements Runnable {
 
 	private Class<?> initClass;
 	private Method initMethod;
 	private long startTime;
 	private int popSize;
 
-	public Runner(Class<?> cls, Method method, int nruns) {
-		super();
-		this.initClass = cls;
+	public Runner(Method method, int nruns) {
+        this(method, nruns, null);
+    }
+
+    public Runner(Method method, int nruns, Config config) {
+        this.initClass = method.getDeclaringClass();
 		this.initMethod = method;
-		this.popSize = nruns;
-	}
+        this.popSize = nruns;
+        // Run with config
+    }
 	
 	public Runner(Runner runner) {
-		this(runner.initClass, runner.initMethod, runner.popSize);
+		this(runner.initMethod, runner.popSize);
 	}
 	
 	public long getEllapsedTime() {
@@ -39,12 +43,16 @@ public class Runner extends Thread {
 	}
 	
 	public void run() {
-		
+        execute();
+    }
+
+    public void execute() {
+
 		// To start with, we don't give a config so that one is generated as it goes
 		// and then in a loop, (grade them all, breed them, and mutate them)
 		
 //		Config baseConfig = RNG.parseConfig(initMethod);
-		
+
 		// Mutate so that we try some new things
 //		rng.mutateConfig();
 		
@@ -55,7 +63,8 @@ public class Runner extends Thread {
 		int count = 0;
 		while (count < popSize) {
 
-			Config config = parseConfig(initMethod);
+            Config config = parseConfig(initMethod);
+            config.setCallerMethod(initMethod);
 			try {
                 Object instance = Engine.rog.getInstance(initClass, config);
                 Object[] args = Engine.rog.getArgInstancesFor(initMethod, config);
@@ -77,7 +86,7 @@ public class Runner extends Thread {
     }
 
     public static Config parseConfig(Method method) {
-		Config config = new Config();
+        Config config = new Config();
 		FuzzConstraints constraintsAnnotation = method.getAnnotation(FuzzConstraints.class);
 		if (constraintsAnnotation != null) {
 			FuzzConstraint[] constraints = constraintsAnnotation.value();

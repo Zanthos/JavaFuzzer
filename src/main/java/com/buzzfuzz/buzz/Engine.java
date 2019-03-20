@@ -1,11 +1,8 @@
 package com.buzzfuzz.buzz;
 
 import java.util.List;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.nio.file.Paths;
@@ -14,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import com.buzzfuzz.rog.decisions.Config;
 import com.buzzfuzz.rog.utility.ConfigUtil;
@@ -27,13 +25,17 @@ public class Engine {
 	public static FROG rog;
 	
 	public static String outputDir = "${project.build.directory}";
-	private static final String buzzDir = "buzz-reports";
-	
+    private static final String buzzDir = "buzz-reports";
+
+    public static Set<Method> methodTargets;
+
 	@SuppressWarnings({ "rawtypes" })
 	public static void fuzz(Set<Method> methods) {
 
         if (rog == null)
             return;
+
+        methodTargets = methods;
 
 		System.out.println("-------------------------------------------------------");
 		System.out.println(" F U Z Z  T E S T S");
@@ -60,18 +62,18 @@ public class Engine {
 			}
 		}
 
-		List<Runner> runners = new ArrayList<Runner>();
+		List<Thread> runners = new ArrayList<Thread>();
 		
 		for (Map.Entry<Class, Set<Method>> entry : map.entrySet()) {
 			Class key = entry.getKey();
 			for (Method method : entry.getValue()) {
-				Runner runner = new Runner(key, method, 500);
+				Thread runner = new Thread(new Runner(method, 100));
 				runner.start();
 				runners.add(runner);
 			}
 		}
-		
-		for (Runner runner : runners) {
+
+		for (Thread runner : runners) {
 			try {
 //				while (runner.isAlive()) {
 //					if (runner.getEllapsedTime() > 10000) {
@@ -88,8 +90,17 @@ public class Engine {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
-	}
+        }
+
+        // Keep checking exceptions until all new ones have been managed
+        File exceptionsDir = Paths.get(outputDir, buzzDir).toFile();
+        new ExceptionManager(100, 10).manage(exceptionsDir);
+    }
+
+    public static String getMethodName(Method method) {
+        // Might eventually need to separate methods by their arguments
+        return method.getDeclaringClass().getSimpleName() + '_' + method.getName();
+    }
 	
 	public synchronized static void report(String mthName, int popSize, int crashes, long time, Set<String> crashNames) {
 		System.out.println("Fuzzing Method " + mthName);
@@ -126,10 +137,11 @@ public class Engine {
 		} else {
 			crashName = "No_Stacktrace";
 		}
-		
+
 		File crashDir = Paths.get(
-				outputDir, 
-				buzzDir, 
+                outputDir,
+                buzzDir,
+                getMethodName(config.getCallerMethod()),
 				t.getClass().getSimpleName(),
 				crashName).toFile();
 		if (!crashDir.exists())

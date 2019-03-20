@@ -77,7 +77,7 @@ public class FuzzMojo  extends AbstractMojo
 //		for (Method meth : methods) {
 //			System.out.println("Fuzzing method " + meth.getName());
 //		}
-		
+
         Engine.outputDir = projectOutputDir;
         Engine.rog = new FROG(reflections);
 
