@@ -10,6 +10,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 import com.buzzfuzz.rog.decisions.Config;
+import com.buzzfuzz.rog.decisions.ConfigTree;
+import com.buzzfuzz.rog.decisions.ConfigTree.Scope;
 import com.buzzfuzz.rog.utility.ConfigUtil;
 
 import org.codehaus.plexus.util.FileUtils;
@@ -119,9 +121,37 @@ public class ExceptionWorker extends Thread {
         }
     }
 
-    private Config createChild(Config a, Config b) {
-        // TODO: randomly choose nodes from parents
-        return a;
+    private static Config createChild(Config t1, Config t2) {
+        return new Config(new ConfigTree(mergeDNA(t1.getTree().getRoot(), t2.getTree().getRoot())));
+	}
+
+	// Merges two trees together, overriding the first tree with the second where applicable
+	private static Scope mergeDNA(Scope s1, Scope s2) {
+
+        Scope node = new Scope();
+        node.setTarget(Math.random() > 0.5 ? s1.getTarget() : s2.getTarget());
+        node.setConstraint(Math.random() > 0.5 ? s1.getConstraint() : s2.getConstraint());
+
+        // Maybe can replace with a while loop that has a catch for when one runs out.
+
+        int i=0;
+        while (true) { // While true is a bit weird but actually slightly efficient because of two conditionals
+            if (i >= s1.getChildren().size()) {
+                for (Scope child : s2.getChildren()) {
+                    node.addChild(child);
+                }
+                break;
+            } else if (i >= s2.getChildren().size()) {
+                for (Scope child : s2.getChildren()) {
+                    node.addChild(child);
+                }
+                break;
+            }
+            node.addChild(mergeDNA(s1.getChildren().get(i), s2.getChildren().get(i)));
+            i++;
+        }
+
+        return node;
     }
 
     private class Member {
