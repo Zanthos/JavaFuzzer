@@ -25,7 +25,7 @@ public class Engine {
 	public static FROG rog;
 	
 	public static String outputDir = "${project.build.directory}";
-    private static final String buzzDir = "buzz-reports";
+    private static final String buzzDir = "fuzzBugs";
 
     public static Set<Method> methodTargets;
 

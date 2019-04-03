@@ -55,7 +55,7 @@ public class Runner implements Runnable {
 
 		// Mutate so that we try some new things
 //		rng.mutateConfig();
-		
+
 		Set<String> crashes = new HashSet<String>();
 		int crashCount = 0;
 		startTime = java.lang.System.currentTimeMillis();
@@ -79,8 +79,8 @@ public class Runner implements Runnable {
 			}
 			count++;
 		}
-		
-		Engine.report(initMethod.getName(), popSize, crashCount, getEllapsedTime(), crashes);
+
+		// Engine.report(initMethod.getName(), popSize, crashCount, getEllapsedTime(), crashes);
 		
 //		rng.printConfig();
     }

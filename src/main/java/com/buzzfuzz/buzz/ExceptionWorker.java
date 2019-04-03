@@ -6,8 +6,10 @@ package com.buzzfuzz.buzz;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
 import com.buzzfuzz.rog.decisions.Config;
 import com.buzzfuzz.rog.decisions.ConfigTree;
@@ -58,22 +60,30 @@ public class ExceptionWorker extends Thread {
             }
 
             // Evaluate exception
+            List<Long> fitnesses = new ArrayList<Long>();
             for (int g = 0; g < this.gens; g++) {
                 Member[] population = cull();
+                if (population.length != 0) {
+                    fitnesses.add(population[0].fitness);
+                } else {
+                    fitnesses.add(0L);
+                }
 
                 Config[] nextGen = breed(population);
 
                 // Now that we have bred the new population, we can delete the old one.
-                try {
-                    FileUtils.cleanDirectory(workspace.location);
-                    System.out.println("Deleted past generation");
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                if (population.length > this.popSize) {
+                    try {
+                            FileUtils.cleanDirectory(workspace.location);
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                 }
 
                 simulate(nextGen);
             }
+            System.out.println(this.workspace.location.getParentFile().getName() + ": " + fitnesses.toString());
         }
     }
 
@@ -93,7 +103,8 @@ public class ExceptionWorker extends Thread {
         Arrays.sort(population, new SortbyFitness());
 
         // Only take the first part of the population that had the highest fitness
-        return Arrays.copyOfRange(population, 0, Math.min(popSize, (int)(population.length * nextGenRatio)));
+        int keepSize = (population.length < popSize/5) ? population.length : (int)(population.length * nextGenRatio);
+        return Arrays.copyOfRange(population, 0, Math.min(popSize, keepSize));
     }
 
     private Config[] breed(Member[] population) {
