@@ -67,12 +67,14 @@ public class ExceptionManager {
             // For every type of exception
             for (File exception : methodDir.listFiles()) {
                 // For every bug of exception
-                for (File bug : exception.listFiles()) {
-                    if (!foundExceptions.contains(bug)) {
-                        foundExceptions.add(bug);
-                        System.out.println("Pushing new bug: " + bug.getName());
-                        File corpusPath = Paths.get(bug.getPath(), "corpus").toFile();
-                        this.exceptionInstances.push(new ExceptionWorkspace(corpusPath, method));
+                if (exception.listFiles() != null) {
+                    for (File bug : exception.listFiles()) {
+                        if (!foundExceptions.contains(bug)) {
+                            foundExceptions.add(bug);
+                            System.out.println("Pushing new bug: " + bug.getName());
+                            File corpusPath = Paths.get(bug.getPath(), "corpus").toFile();
+                            this.exceptionInstances.push(new ExceptionWorkspace(corpusPath, method));
+                        }
                     }
                 }
             }

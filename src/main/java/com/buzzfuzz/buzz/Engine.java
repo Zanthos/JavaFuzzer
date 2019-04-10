@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import com.buzzfuzz.rog.decisions.Config;
 import com.buzzfuzz.rog.utility.ConfigUtil;
@@ -94,7 +93,7 @@ public class Engine {
 
         // Keep checking exceptions until all new ones have been managed
         File exceptionsDir = Paths.get(outputDir, buzzDir).toFile();
-        new ExceptionManager(100, 10).manage(exceptionsDir);
+        new ExceptionManager(100, 20).manage(exceptionsDir);
     }
 
     public static String getMethodName(Method method) {

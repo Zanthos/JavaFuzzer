@@ -21,7 +21,8 @@ public class Runner implements Runnable {
 	private Class<?> initClass;
 	private Method initMethod;
 	private long startTime;
-	private int popSize;
+    private int popSize;
+    private Config config;
 
 	public Runner(Method method, int nruns) {
         this(method, nruns, null);
@@ -31,7 +32,9 @@ public class Runner implements Runnable {
         this.initClass = method.getDeclaringClass();
 		this.initMethod = method;
         this.popSize = nruns;
-        // Run with config
+        this.config = config;
+        if (this.config != null)
+            this.config.setCallerMethod(method);
     }
 	
 	public Runner(Runner runner) {
@@ -48,26 +51,21 @@ public class Runner implements Runnable {
 
     public void execute() {
 
-		// To start with, we don't give a config so that one is generated as it goes
-		// and then in a loop, (grade them all, breed them, and mutate them)
-		
-//		Config baseConfig = RNG.parseConfig(initMethod);
-
-		// Mutate so that we try some new things
-//		rng.mutateConfig();
+        if (this.config == null) {
+            this.config = parseConfig(initMethod);
+            this.config.setCallerMethod(this.initMethod);
+        }
 
 		Set<String> crashes = new HashSet<String>();
 		int crashCount = 0;
 		startTime = java.lang.System.currentTimeMillis();
-		
+
 		int count = 0;
 		while (count < popSize) {
-
-            Config config = parseConfig(initMethod);
-            config.setCallerMethod(initMethod);
+            Config runningConfig = this.config.clone();
 			try {
-                Object instance = Engine.rog.getInstance(initClass, config);
-                Object[] args = Engine.rog.getArgInstancesFor(initMethod, config);
+                Object instance = Engine.rog.getInstance(initClass, runningConfig);
+                Object[] args = Engine.rog.getArgInstancesFor(initMethod, runningConfig);
 				initMethod.invoke(instance, args);
 
 				// Eventually add this to the log as well and use for crash-free corpus
@@ -75,7 +73,7 @@ public class Runner implements Runnable {
 //				System.out.println("Fuzzing finished and created: " + String.valueOf(result));
 //				System.out.println();
 			} catch (Exception e) {
-                Engine.log(e, config);
+                Engine.log(e, runningConfig);
 			}
 			count++;
 		}
