@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
+import com.buzzfuzz.rog.decisions.Choice;
 import com.buzzfuzz.rog.decisions.Config;
 import com.buzzfuzz.rog.decisions.ConfigTree;
 import com.buzzfuzz.rog.decisions.Constraint;
@@ -27,8 +28,8 @@ import org.codehaus.plexus.util.FileUtils;
  */
 public class ExceptionWorker extends Thread {
 
-    static final double nextGenRatio = 0.5;
-    static final double validChoiceWeight = 11;
+    static final double nextGenRatio = 0.2;
+    static final double validChoiceWeight = 10;
 
     private ExceptionManager manager;
     private int popSize;
@@ -68,7 +69,7 @@ public class ExceptionWorker extends Thread {
             for (int g = 0; g < this.gens; g++) {
                 Member[] population = cull();
                 if (population.length != 0) {
-                    fitnesses.add(population[0].fitness);
+                    fitnesses.add((double)Math.round(population[0].fitness));
                     winner = population[0].location.getAbsolutePath();
                 } else {
                     fitnesses.add(0.0);
@@ -142,8 +143,6 @@ public class ExceptionWorker extends Thread {
         return score;
     }
 
-    private static final int choiceWeight = 5;
-
     // Returns fitness evaluation for the percentage of the time that choices fit the config's constraints
     private double evaluateFitness(Member subject, Member example) {
         // Iterate through scopes in choices
@@ -151,36 +150,19 @@ public class ExceptionWorker extends Thread {
         // Evaluate if the choices would have been possible given the constraints
         int enforce = 0;
         int deter = 0;
-        for (Scope scope : example.extractConfig().getTree()) {
-            Constraint constraint = subject.extractConfig().findConstraintFor(scope.getTarget());
-            if (constraint == null) {
-                continue;
-            }
-            Constraint choices = scope.getConstraint();
-            if (choices != null) {
-                if (choices.getIntChoices() != null) {
-                    for (int choice : scope.getConstraint().getIntChoices()) {
-                        enforce += constraint.rateValidity(choice);
-                    }
-                } if (choices.getFloatChoices() != null) {
-                    for (float choice : scope.getConstraint().getFloatChoices()) {
-                        enforce += constraint.rateValidity(choice);
-                    }
-                } if (choices.getDoubleChoices() != null) {
-                    for (double choice : scope.getConstraint().getDoubleChoices()) {
-                        enforce += constraint.rateValidity(choice);
-                    }
-                } if (choices.getShortChoices() != null) {
-                    for (short choice : scope.getConstraint().getShortChoices()) {
-                        enforce += constraint.rateValidity(choice);
-                    }
-                } if (choices.getLongChoices() != null) {
-                    for (long choice : scope.getConstraint().getLongChoices()) {
-                        enforce += constraint.rateValidity(choice);
-                    }
-                }
-            }
+        Config subjectConfig = subject.extractConfig();
+        for (Choice choice : example.extractConfig().getChoices()) {
+            // System.out.println(choice.getTarget());
+            Constraint response = subjectConfig.findConstraintFor(choice.getTarget());
+            int validity = choice.rateValidity(response);
+            // System.out.println(validity);
+            enforce += validity;
         }
+        //     Constraint constraint = subject.extractConfig().findConstraintFor(scope.getTarget());
+        //     if (constraint == null) {
+        //         continue;
+        //     }
+        // }
         // System.out.println();
         return (validChoiceWeight * enforce) - deter;
     }
@@ -325,7 +307,7 @@ public class ExceptionWorker extends Thread {
         public Config extractConfig() {
             if (this.config == null) {
                 String configFilePath = Paths.get(this.location.getPath(), "config.xml").toString();
-                this.config = new Config(ConfigUtil.createConfigFromFile(configFilePath));
+                this.config = ConfigUtil.createConfigFromFile(configFilePath);
             }
             return this.config;
         }

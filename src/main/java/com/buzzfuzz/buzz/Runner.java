@@ -106,6 +106,6 @@ public class Runner implements Runnable {
 		// Also need to add pairs given in annotations
 		String configFile = constraint.configFile();
 		if (configFile != null && !configFile.isEmpty())
-			ConfigUtil.mergeNewTree(config.getTree(), ConfigUtil.createConfigFromFile(configFile));
+			ConfigUtil.mergeNewTree(config.getTree(), ConfigUtil.createConfigFromFile(configFile).getTree());
     }
 }
