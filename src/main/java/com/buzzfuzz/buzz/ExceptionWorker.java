@@ -130,7 +130,7 @@ public class ExceptionWorker extends Thread {
         if (constraint == null)
             return 0;
         int score = 0; // insentive to get rid of constraints that do nothing
-        if (constraint.getNullProb() != null)
+        if (constraint.isNull() != null)
 			score++;
 		if (constraint.getProb() != null)
             score++;
@@ -154,9 +154,13 @@ public class ExceptionWorker extends Thread {
         for (Choice choice : example.extractConfig().getChoices()) {
             // System.out.println(choice.getTarget());
             Constraint response = subjectConfig.findConstraintFor(choice.getTarget());
-            int validity = choice.rateValidity(response);
-            // System.out.println(validity);
-            enforce += validity;
+            if (response != null) {
+                enforce += choice.rateValidity(response);
+                deter += response.size();
+            }
+        }
+        for (Scope scope : subjectConfig.getTree()) {
+            deter++;
         }
         //     Constraint constraint = subject.extractConfig().findConstraintFor(scope.getTarget());
         //     if (constraint == null) {
@@ -191,9 +195,11 @@ public class ExceptionWorker extends Thread {
     }
 
     private static Config createChild(Config t1, Config t2) {
+        // Scope root = new Scope();
+        // for ( ) // go through kids manually so that I can delete them easily
         ConfigTree tree = new ConfigTree(mergeDNA(t1.getTree().getRoot(), t2.getTree().getRoot()));
         // int size = tree.getRoot().getChildren().size();
-        if (should(0))
+        if (should(0.15))
             ConfigUtil.minimize(tree);
         // if (size != tree.getRoot().getChildren().size()) {
         //     String path = "/Users/Rockett/Projects/Fuzzing/JavaFuzzing/ExampleMavenProject/demo/target/";
@@ -282,8 +288,8 @@ public class ExceptionWorker extends Thread {
             constraint.setLowerBound(null);
         if (should(0.2) && constraint.getUpperBound() != null)
             constraint.setUpperBound(null);
-        if (should(0.2) && constraint.getNullProb() != null)
-            constraint.setNullProb(null);
+        if (should(0.2) && constraint.isNull() != null)
+            constraint.setIsNull(null);
         if (should(0.2) && constraint.getProb() != null)
             constraint.setProb(null);
         return constraint;

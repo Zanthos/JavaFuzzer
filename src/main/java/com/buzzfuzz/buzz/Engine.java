@@ -93,7 +93,7 @@ public class Engine {
 
         // Keep checking exceptions until all new ones have been managed
         File exceptionsDir = Paths.get(outputDir, buzzDir).toFile();
-        new ExceptionManager(250, 50).manage(exceptionsDir);
+        new ExceptionManager(50, 10).manage(exceptionsDir);
     }
 
     public static String getMethodName(Method method) {
